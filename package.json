@@ -1,0 +1,35 @@
+{
+    "name": "jeyksnib",
+    "version": "5.1.0",
+    "description": "Yet another JS Kernel for Jupyter Notebooks",
+    "keywords": [
+        "javascript",
+        "kernel",
+        "ipython",
+        "jupyter"
+    ],
+    "homepage": "https://3Nigma.github.io/jeyksnib",
+    "bugs": {
+        "url": "https://3Nigma.github.io/jeyksnib/issues"
+    },
+    "license": "GPLv3",
+    "author": {
+        "name": "Victor ADASCALITEI",
+        "email": "adascalitei.victor@gmail.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://3Nigma.github.io/jeyksnib.git"
+    },
+    "dependencies": {
+        "pkginfo": "^0.4.1",
+        "uuid": "3",
+        "winston": "^3.2.1",
+        "yargs": "^13.3.0",
+        "zeromq": "^5.1.0"
+    },
+    "devDependencies": {
+    },
+    "scripts": {
+    }
+}
