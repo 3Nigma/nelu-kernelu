@@ -10,12 +10,12 @@ class MessageLoop {
         this._handlers = {
             [SessionBasicRequestTypes.ExecuteCode]: SessionExecuteCodeRequest
         };
-        // this._context = vm.createContext({
-        //     ...global,
-        //     kernel: () => {
-        //         console.log("called kernel");
-        //     }
-        // });
+        this._context = vm.createContext({
+            ...global, Promise,
+            kernel: () => {
+                console.log("called kernel");
+            }
+        });
     }
     
     start() {
@@ -35,14 +35,15 @@ class MessageLoop {
             let promisedEvalResult;
             
             try {
-                let scriptToEval = new vm.Script(args.code);
-                let rawEvalResult = scriptToEval.runInThisContext(); //scriptToEval.runInContext(this._context);
+                let rawEvalResult = vm.runInContext(args.code, this._context);
 
                 if (rawEvalResult instanceof Promise) {
                     promisedEvalResult = rawEvalResult.then(resolvedResult => {
                         let innerPromisedEvalResult;
 
-                        if (resolvedResult instanceof Object && resolvedResult._toHtml instanceof Function) {
+                        // Note: don't use instanceOf. It looks like Object and Function is not part of the execution context
+                        //       even though Promise is
+                        if (typeof resolvedResult === 'object' && typeof resolvedResult._toHtml === 'function') {
                             let resolvedResultOfHtml = resolvedResult._toHtml();
 
                             resultMimeType = 'text/html';

@@ -1,10 +1,8 @@
 const { SessionBasicRequest, SessionBasicRequestTypes } = require('./base');
 
-const { SessionExecuteCodeResponse } = require('../responses/execute_code');
-
 class SessionExecuteCodeRequest extends SessionBasicRequest {
     constructor(id, execCount, code) {
-        super(id, SessionBasicRequestTypes.ExecuteCode, SessionExecuteCodeResponse);
+        super(id, SessionBasicRequestTypes.ExecuteCode);
         this._executionCount = execCount;
         this._code = code;
     }
