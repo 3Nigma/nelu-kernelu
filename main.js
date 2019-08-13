@@ -46,14 +46,13 @@ if (process.env.NODE_ENV !== 'production') {
     logger.add(new transports.Console());
 }
 
-// Interpret a SIGINT signal as a request to interrupt the kernel
+// Handle process messages (like SIGINT)
 process.on("SIGINT", async () => {
-    log("Interrupting kernel");
-    await kernel.destroy(); // TODO(NR) Implement kernel interruption
+    logger.debug("Interrupting kernel");
+    await kernel.destroy();
 });
-
 process.on("uncaughtException", err => {
-    console.log(err);
+    logger.error("An uncaught exception triggered in the kernel:", err);
 });
 
 // Start kernel

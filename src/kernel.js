@@ -13,9 +13,7 @@ class Kernel {
         this._connection = connection;
         this._protocolVersion = protocolVersion;
 
-        this._identity = uuid.v4();                         // ZMQ identity
-        this._onReplies = {};                               // onReply callbacks indexed by input_request.header.msg_id
-        this._lastActiveOnReply = null;                     // holds the last unused onReply callback (when input_reply.parent_header is not provided)
+        this._identity = uuid.v4();                         // the kernel's ZMQ identity
 
         // Socket inits
         // Heart Beating above else
@@ -120,35 +118,7 @@ class Kernel {
     }
 
     _onStdinMessage(origin) {
-        // TODO
-
-
-        // let msg_type = msg.header.msg_type;
-
-        // if (msg_type === "input_reply") {
-        //     let onReply;
-        //     let messageType = msg.parent_header.msg_id;
-
-        //     if (messageType) {
-        //         onReply = this._onReplies[messageType];
-        //     } else {
-        //         // TODO: Frontend did not set parent_header.msg_id
-        //         onReply = this._lastActiveOnReply;
-        //     }
-
-        //     if (!onReply) {
-        //         // Dropping input_reply because of missing onReply callback
-        //         return;
-        //     }
-
-        //     if (this._lastActiveOnReply === onReply) {
-        //         this._lastActiveOnReply = null;
-        //     }
-
-        //     onReply({input: msg.content.value});
-        // } else {
-        //     // Ignore unimplemented msg_type requests
-        // }
+        // TODO: handle these types of messages at some point
     }
 }
 

@@ -37,7 +37,7 @@ class ExecuteRequestHandler extends BasicRequestHandler {
     async _handle(sKernel, message) {
         let codeToRun = message.info.content.code;
         
-        sKernel.logger.debug(`Executing ${codeToRun}.`);
+        sKernel.logger.silly(`Executing ${codeToRun}.`);
         return new Promise((accept, _) => {
             let codeExecutionTask = sKernel.session.execute(codeToRun);
 
@@ -72,7 +72,7 @@ class RequestHandlers {
     }
 
     /**
-     * @todo
+     * @todo remove this. It's only kept for implementation reference
      */
     execute_request(request) {
         var displayIds = {};
