@@ -61,8 +61,6 @@ let kernel = new Kernel({
     logger,
     protocolVersion: "5.2.3",
     connection: JSON.parse(fs.readFileSync(argv['connection-file'])),
-    hideUndefined: true,
-    hideExecutionResult: true,
     startupScript: null
 });
 

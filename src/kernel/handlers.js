@@ -42,7 +42,7 @@ class ExecuteRequestHandler extends BasicRequestHandler {
             let codeExecutionTask = sKernel.session.execute(codeToRun);
 
             codeExecutionTask.run().then(resultingArgs => {
-                JupyterExecuteReplyMessage.newFor(message, codeExecutionTask.execCount).sendTo(sKernel.shellSocket);
+                JupyterExecuteReplyMessage.newFor(message, codeExecutionTask.description.args.executionCount).sendTo(sKernel.shellSocket);
                 if (resultingArgs.result.value !== undefined) {
                     JupyterExecuteResultMessage.newFor(message, resultingArgs).sendTo(sKernel.iopubSocket);
                 }

@@ -2,21 +2,18 @@ const uuid = require("uuid");
 
 const { zmq, JupyterSocketTypes, JupyterSocket } = require("./kernel/socket");
 const { RequestHandlers } = require('./kernel/handlers');
-const { Session } = require("./session/session"); // Javascript session
+const { Session } = require("./session/session");
 
 /**
  * Implements a Javascript kernel for IPython/Jupyter.
  */
 class Kernel {
-    constructor({ logger, connection, hideExecutionResult, 
-        hideUndefined, protocolVersion, startupScript }) {
+    constructor({ logger, connection, protocolVersion, startupScript }) {
         this._logger = logger;
         this._connection = connection;
         this._protocolVersion = protocolVersion;
 
         this._identity = uuid.v4();                         // ZMQ identity
-        this._hideExecutionResult = hideExecutionResult;    // Hide execution results ?
-        this._hideUndefined = hideUndefined;                // Hide undefined results ?
         this._onReplies = {};                               // onReply callbacks indexed by input_request.header.msg_id
         this._lastActiveOnReply = null;                     // holds the last unused onReply callback (when input_reply.parent_header is not provided)
 
