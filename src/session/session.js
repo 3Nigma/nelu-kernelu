@@ -46,7 +46,7 @@ class Session {
 
         // Store the request
         this._tasks.pendingResolution[this._tasks.nextId] = executeCodeRequest;
-        this._server.postMessage(executeCodeRequest.description);
+        executeCodeRequest.postTo(this._server);
 
         // Make sure we advance the indexes
         this._tasks.nextId++;

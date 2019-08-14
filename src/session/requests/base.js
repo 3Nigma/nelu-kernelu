@@ -21,6 +21,10 @@ class SessionBasicRequest {
         };
     }
 
+    postTo(server) {
+        server.postMessage(this.description);
+    }
+
     run() {
         return new Promise((accept, _) => {
             this.resolveWith = accept;
