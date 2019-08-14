@@ -52,7 +52,7 @@ process.on("SIGINT", async () => {
     await kernel.destroy();
 });
 process.on("uncaughtException", err => {
-    logger.error("An uncaught exception triggered in the kernel:", err);
+    logger.error(`An uncaught exception triggered in the kernel: ${err}\nStack dumped: ${err.stack}`);
 });
 
 // Start kernel
