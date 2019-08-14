@@ -1,5 +1,7 @@
-const { BasicRequestHandler } = require('./messages/handlers/basic');
+const util = require('util');
 
+const { BasicRequestHandler } = require('./messages/handlers/basic');
+const { JupyterKernelStreamTypes, JupyterStreamMessage } = require('./messages/flavours/stream');
 const { JupyterInfoMessage } = require('./messages/flavours/kernel_info_reply');
 const { JupyterShutdownMessage } = require('./messages/flavours/shutdown_reply');
 const { JupyterExecuteReplyMessage } = require('./messages/flavours/execute_reply');
@@ -41,6 +43,9 @@ class ExecuteRequestHandler extends BasicRequestHandler {
         return new Promise((accept, _) => {
             let codeExecutionTask = sKernel.session.execute(codeToRun);
 
+            codeExecutionTask.onConsoleData(data => {
+                JupyterStreamMessage.newFor(message, JupyterKernelStreamTypes.Out, util.format(...data)).sendTo(sKernel.iopubSocket);
+            });
             codeExecutionTask.run().then(resultingArgs => {
                 JupyterExecuteReplyMessage.newFor(message, codeExecutionTask.description.args.executionCount).sendTo(sKernel.shellSocket);
                 if (resultingArgs.result.value !== undefined) {
