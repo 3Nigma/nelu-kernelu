@@ -9,8 +9,8 @@ class MessageLoop {
         this._parentPort = hostPort;
         let selfContext = {
             ...global, Promise,
-            print: (...what) => {
-                new SessionPrintRequest(selfContext.kernel._taskId, what).postTo(this._parentPort);
+            _kPrint: (tId, ...what) => {
+                new SessionPrintRequest(tId, what).postTo(this._parentPort);
             },
             kernel: {
                 _taskId: 0
@@ -36,7 +36,12 @@ class MessageLoop {
             let promisedEvalResult;
             
             try {
-                let rawEvalResult = vm.runInContext(`kernel._taskId = ${id}; ${args.code}`, this._context);
+                let rawEvalResult = vm.runInContext([
+                    '{',
+                        `let print = _kPrint.bind(this, ${id});`,
+                        args.code,
+                    '}'
+                ].join(''), this._context);
 
                 if (rawEvalResult instanceof Promise) {
                     promisedEvalResult = rawEvalResult.then(resolvedResult => {
