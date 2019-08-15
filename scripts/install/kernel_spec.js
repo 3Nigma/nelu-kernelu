@@ -19,19 +19,14 @@ class KernelSpec {
 
     install() {       
         const { kernelDir, jsonPath, imgDir } = this._getIntsallPaths();
+        const { argv, display_name, language } = this;
 
         if (!fs.existsSync(kernelDir)) {
             fs.mkdirSync(kernelDir);
         }
 
-        const kernelSpec = JSON.stringify({
-            argv: this.argv,
-            display_name: this.display_name,
-            language: this.language
-        });
-
+        const kernelSpec = JSON.stringify({ argv, display_name, language });
         fs.writeFileSync(jsonPath, kernelSpec);
-
         this._copyLogos(imgDir, kernelDir);
     }
 
