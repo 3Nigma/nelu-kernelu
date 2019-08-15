@@ -1,5 +1,5 @@
 const KernelSpec = require('./kernel_spec');
 
-new KernelSpec();
+const kernelSpec = new KernelSpec();
 
 kernelSpec.install();
