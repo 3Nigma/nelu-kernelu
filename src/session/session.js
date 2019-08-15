@@ -1,6 +1,7 @@
 const { Worker } = require('worker_threads');
 const { MainWorkerPath } = require('./main');
 
+const { SessionBasicRequestTypes } = require('./requests/base');
 const { SessionExecuteCodeRequest } = require('./requests/execute_code');
 
 class Session {
@@ -58,11 +59,15 @@ class Session {
     /**
      * Callback to handle messages from the session server
      */
-    _onMessage({id, args}) {
+    _onMessage({id, type, args}) {
         let targetedPendingTask = this._tasks.pendingResolution[id];
 
         if (targetedPendingTask) {
-            targetedPendingTask.resolveWith(args);
+            if (type === SessionBasicRequestTypes.Print) {
+                targetedPendingTask.notifyOfConsoleData(args.what);
+            } else {
+                targetedPendingTask.resolveWith(args);
+            }
         } else {
             // TODO: the provided id does not target a valid pending task
         }

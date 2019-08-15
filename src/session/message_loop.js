@@ -1,21 +1,22 @@
 const vm = require('vm');
 
 const { SessionBasicRequestTypes } = require('./requests/base');
-const { SessionExecuteCodeRequest } = require('./requests/execute_code');
+const { SessionPrintRequest } = require('./requests/print');
 const { SessionExecuteCodeResponse } = require('./responses/execute_code');
 
 class MessageLoop {
     constructor(hostPort) {
         this._parentPort = hostPort;
-        this._handlers = {
-            [SessionBasicRequestTypes.ExecuteCode]: SessionExecuteCodeRequest
-        };
-        this._context = vm.createContext({
+        let selfContext = {
             ...global, Promise,
-            kernel: () => {
-                console.log("called kernel");
+            print: (...what) => {
+                new SessionPrintRequest(selfContext.kernel._taskId, what).postTo(this._parentPort);
+            },
+            kernel: {
+                _taskId: 0
             }
-        });
+        };
+        this._context = vm.createContext(selfContext);
     }
     
     start() {
@@ -35,7 +36,7 @@ class MessageLoop {
             let promisedEvalResult;
             
             try {
-                let rawEvalResult = vm.runInContext(args.code, this._context);
+                let rawEvalResult = vm.runInContext(`kernel._taskId = ${id}; ${args.code}`, this._context);
 
                 if (rawEvalResult instanceof Promise) {
                     promisedEvalResult = rawEvalResult.then(resolvedResult => {
