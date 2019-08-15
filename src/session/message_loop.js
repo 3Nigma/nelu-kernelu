@@ -9,11 +9,10 @@ class MessageLoop {
         this._parentPort = hostPort;
         let selfContext = {
             ...global, Promise,
-            _kPrint: (tId, ...what) => {
-                new SessionPrintRequest(tId, what).postTo(this._parentPort);
-            },
             kernel: {
-                _taskId: 0
+                _print: (tId, ...what) => {
+                    new SessionPrintRequest(tId, what).postTo(this._parentPort);
+                }
             }
         };
         this._context = vm.createContext(selfContext);
@@ -38,7 +37,7 @@ class MessageLoop {
             try {
                 let rawEvalResult = vm.runInContext([
                     '{',
-                        `let print = _kPrint.bind(this, ${id});`,
+                        `let print = kernel._print.bind(this, ${id});`,
                         args.code,
                     '}'
                 ].join(''), this._context);
