@@ -1,8 +1,7 @@
 const EventEmitter = require('events');
 
 const SessionBasicRequestTypes = {
-    ExecuteCode: 'execute_code_request',
-    Print: 'print_request'
+    ExecuteCode: 'execute_code_request'
 };
 
 class SessionBasicRequest extends EventEmitter {
@@ -27,13 +26,6 @@ class SessionBasicRequest extends EventEmitter {
 
     postTo(server) {
         server.postMessage(this.description);
-    }
-
-    onConsoleData(clb) {
-        return this.on('stdout', clb);
-    }
-    notifyOfConsoleData(data) {
-        return this.emit('stdout', data);
     }
 
     run() {

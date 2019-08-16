@@ -6,6 +6,7 @@ const { JupyterInfoMessage } = require('./messages/flavours/kernel_info_reply');
 const { JupyterShutdownMessage } = require('./messages/flavours/shutdown_reply');
 const { JupyterExecuteReplyMessage } = require('./messages/flavours/execute_reply');
 const { JupyterExecuteResultMessage } = require('./messages/flavours/execute_result');
+const { SessionPrintEvent } = require('../session/events/print');
 
 class DefaultRequestHandler extends BasicRequestHandler {
     _handle(sKernel, message) {
@@ -43,8 +44,8 @@ class ExecuteRequestHandler extends BasicRequestHandler {
         return new Promise((accept, _) => {
             let codeExecutionTask = sKernel.session.execute(codeToRun);
 
-            codeExecutionTask.onConsoleData(data => {
-                JupyterStreamMessage.newFor(message, JupyterKernelStreamTypes.Out, util.format(...data)).sendTo(sKernel.iopubSocket);
+            codeExecutionTask.on(SessionPrintEvent.name, ({ what }) => {
+                JupyterStreamMessage.newFor(message, JupyterKernelStreamTypes.Out, util.format(...what)).sendTo(sKernel.iopubSocket);
             });
             codeExecutionTask.run().then(resultingArgs => {
                 JupyterExecuteReplyMessage.newFor(message, codeExecutionTask.description.args.executionCount).sendTo(sKernel.shellSocket);

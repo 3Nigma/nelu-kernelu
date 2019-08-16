@@ -63,9 +63,11 @@ class Session {
         let targetedPendingTask = this._tasks.pendingResolution[id];
 
         if (targetedPendingTask) {
-            if (type === SessionBasicRequestTypes.Print) {
-                targetedPendingTask.notifyOfConsoleData(args.what);
+            if (type.endsWith('_event')) {
+                targetedPendingTask.emit(type, args);
             } else {
+                // For all other message-type, resolve the pending request
+                // TODO: we should also remove it from the list
                 targetedPendingTask.resolveWith(args);
             }
         } else {

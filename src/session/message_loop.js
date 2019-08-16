@@ -1,30 +1,22 @@
 const vm = require('vm');
 
 const { SessionBasicRequestTypes } = require('./requests/base');
-const { SessionPrintRequest } = require('./requests/print');
 const { SessionExecuteCodeResponse } = require('./responses/execute_code');
+const { SessionKernelBrdge } = require('./models/kernel_bridge');
 
 class MessageLoop {
     constructor(hostPort) {
         this._parentPort = hostPort;
-        let selfContext = {
+        this._context = vm.createContext({
             ...global, Promise,
-            kernel: {
-                _print: (tId, ...what) => {
-                    new SessionPrintRequest(tId, what).postTo(this._parentPort);
-                }
-            }
-        };
-        this._context = vm.createContext(selfContext);
+            _kHostPort: hostPort, SessionKernelBrdge
+        });
     }
     
     start() {
         this._parentPort.on("message", msg => this._handleMessage(msg));
         this._parentPort.on("error", error => {
-            // TODO: refactor this message
-            // this._parentPort.postMessage({
-            //     stderr: error.stack.toString()
-            // });
+            // TODO: notify kernel of this and take action
             console.error("Need to implement error handling on the node-session side.");
         });
     }
@@ -37,7 +29,8 @@ class MessageLoop {
             try {
                 let rawEvalResult = vm.runInContext([
                     '{',
-                        `let print = kernel._print.bind(this, ${id});`,
+                        `const kernel = new SessionKernelBrdge(${id}, _kHostPort);`,
+                        'const print = kernel.print.bind(kernel);',
                         args.code,
                     '}'
                 ].join(''), this._context);
