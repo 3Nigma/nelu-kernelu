@@ -7,6 +7,7 @@ const { SessionKernelBrdge } = require('./models/kernel_bridge');
 class MessageLoop {
     constructor(hostPort) {
         this._parentPort = hostPort;
+        // TODO: obfuscate _kHostPort from the context (random variable name?)
         this._context = vm.createContext({
             ...global, Promise,
             _kHostPort: hostPort, SessionKernelBrdge
@@ -34,30 +35,19 @@ class MessageLoop {
                         args.code,
                     '}'
                 ].join(''), this._context);
+                const tryHtmlResolutionFor = (result) => {
+                    let { isHtml, promisedVal } = this._tryResolvingHtmlFrom(result);
+
+                    if (isHtml) {
+                        resultMimeType = 'text/html';
+                    }
+                    return promisedVal;
+                };
 
                 if (rawEvalResult instanceof Promise) {
-                    promisedEvalResult = rawEvalResult.then(resolvedResult => {
-                        let innerPromisedEvalResult;
-
-                        // Note: don't use instanceOf. It looks like Object and Function is not part of the execution context
-                        //       even though Promise is
-                        if (typeof resolvedResult === 'object' && typeof resolvedResult._toHtml === 'function') {
-                            let resolvedResultOfHtml = resolvedResult._toHtml();
-
-                            resultMimeType = 'text/html';
-                            if (resolvedResultOfHtml instanceof Promise) {
-                                innerPromisedEvalResult = resolvedResultOfHtml;
-                            } else {
-                                innerPromisedEvalResult = Promise.resolve(resolvedResultOfHtml);
-                            }
-                        } else {
-                            innerPromisedEvalResult = Promise.resolve(resolvedResult);
-                        }
-
-                        return innerPromisedEvalResult;
-                    });
+                    promisedEvalResult = rawEvalResult.then(resolvedResult => tryHtmlResolutionFor(resolvedResult));
                 } else {
-                    promisedEvalResult = Promise.resolve(rawEvalResult);
+                    promisedEvalResult = tryHtmlResolutionFor(rawEvalResult);
                 }
             } catch (err) {
                 // TODO
@@ -71,6 +61,28 @@ class MessageLoop {
                 new SessionExecuteCodeResponse(id, args.executionCount, resultMimeType, evalResult).replyTo(this._parentPort);
             });
         }
+    }
+
+    _tryResolvingHtmlFrom(result) {
+        let promisedVal;
+        let isHtml = false;
+
+        // Note: don't use instanceOf. It looks like Object and Function is not part of the execution context
+        //       even though Promise is
+        if (typeof result === 'object' && typeof result._toHtml === 'function') {
+            let resolvedResultOfHtml = result._toHtml();
+
+            isHtml = true;
+            if (resolvedResultOfHtml instanceof Promise) {
+                promisedVal = resolvedResultOfHtml;
+            } else {
+                promisedVal = Promise.resolve(resolvedResultOfHtml);
+            }
+        } else {
+            promisedVal = Promise.resolve(result);
+        }
+
+        return { isHtml, promisedVal };
     }
 }
 
