@@ -1,7 +1,6 @@
 const { Worker } = require('worker_threads');
 const { MainWorkerPath } = require('./main');
 
-const { SessionBasicRequestTypes } = require('./requests/base');
 const { SessionExecuteCodeRequest } = require('./requests/execute_code');
 
 class Session {
