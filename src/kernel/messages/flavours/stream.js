@@ -1,5 +1,5 @@
-
 const { JupyterMessage } = require('../message');
+const { JupyterSocketTypes } = require('../../socket');
 
 const JupyterKernelStreamTypes = {
     Out: 'stdout',
@@ -10,7 +10,7 @@ class JupyterStreamMessage extends JupyterMessage {
     static newFor(request, jkStreamType, text) {
         return new JupyterStreamMessage(request.buildResponseInfoFor({
                 msg_type: "stream"
-            }, {}, {
+            }, {
                 name: jkStreamType,
                 text
             }));
@@ -20,7 +20,7 @@ class JupyterStreamMessage extends JupyterMessage {
      * @private
      */
     constructor(info) {
-        super(info);
+        super(info, JupyterSocketTypes.IOPub);
     }
 }
 

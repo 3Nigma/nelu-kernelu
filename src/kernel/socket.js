@@ -35,6 +35,13 @@ class JupyterSocketType {
         this._connPropName = connPropertyName;
     }
 
+    [Symbol.toPrimitive](hint) {
+        if (hint == 'string') {
+            return this.name;
+        }
+        return null;
+    }
+
     get type() {
         return this._type;
     }

@@ -63,7 +63,7 @@ class JupyterRequestMessage extends JupyterMessage {
         super(info);
     }
 
-    buildResponseInfoFor(header, meta, content) {
+    buildResponseInfoFor(header, content, meta) {
         const requestInfo = this.info;
         const requestInfoHeader = requestInfo.header;
 

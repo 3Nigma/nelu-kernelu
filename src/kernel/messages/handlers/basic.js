@@ -9,9 +9,9 @@ class BasicRequestHandler {
         let sourcingKernel = request.kernel;
         let requestMessage = request.message;
         let handleCallResult;
-        let notifyOfIdleness = () => JupyterStatusMessage.newFor(requestMessage, JupyterKernelStatusTypes.Idle).sendTo(sourcingKernel.iopubSocket);
+        let notifyOfIdleness = () => JupyterStatusMessage.newFor(requestMessage, JupyterKernelStatusTypes.Idle).sendVia(sourcingKernel);
        
-        JupyterStatusMessage.newFor(requestMessage, JupyterKernelStatusTypes.Busy).sendTo(sourcingKernel.iopubSocket);
+        JupyterStatusMessage.newFor(requestMessage, JupyterKernelStatusTypes.Busy).sendVia(sourcingKernel);
         handleCallResult = this._handle(sourcingKernel, requestMessage);
         if (handleCallResult instanceof Promise) {
             handleCallResult.then(notifyOfIdleness);

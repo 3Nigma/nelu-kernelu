@@ -1,21 +1,23 @@
-class SessionPrintEvent {
-    static get name() {
-        return 'session_print_event';
+const { SessionBaseEvent } = require('./base');
+
+class SessionPrintEvent extends SessionBaseEvent {
+    static get type() {
+        return `session_print_${SessionBaseEvent.name_suffix_marker}`;
     }
     
     constructor(skBridge, what) {
-        this._skBridge = skBridge;
+        super(skBridge);
         this._what = what;
     }
 
-    send() {
-        return this._skBridge.kLink.postMessage({
-            id: this._skBridge.taskId,
-            type: SessionPrintEvent.name,
-            args: {
-                what: this._what
-            }
-        });
+    get type() {
+        return SessionPrintEvent.type;
+    }
+
+    get _args() {
+        return {
+            what: this._what
+        };
     }
 }
 

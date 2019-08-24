@@ -6,8 +6,9 @@ const MessageDelimiter = "<IDS|MSG>";
  * Jupyter basic message
  */
 class JupyterMessage {
-    constructor(info) {
+    constructor(info, socketDestinationType) {
         this._info = info;
+        this._targetingSocketType = socketDestinationType;
     }
 
     get info() {
@@ -15,9 +16,10 @@ class JupyterMessage {
     }
 
     /**
-     * Send this encoded message over a ZMQ socket
+     * Send this encoded message via a Kernel instance through the appropriate socket
      */
-    sendTo(sock, flags) {
+    sendVia(kernel) {
+        let sock = kernel.sockets[this._targetingSocketType];
         let scheme = sock.scheme || "sha256";
         let key = sock.key || "";
         let idents = this._info.idents;
@@ -45,7 +47,7 @@ class JupyterMessage {
             parent_header,             // parent header
             metadata,                  // metadata
             content,                   // content
-        ]).concat(this._info.buffers), flags);
+        ]).concat(this._info.buffers));
     }
 }
 

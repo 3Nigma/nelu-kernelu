@@ -3,14 +3,16 @@ const vm = require('vm');
 const { SessionBasicRequestTypes } = require('./requests/base');
 const { SessionExecuteCodeResponse } = require('./responses/execute_code');
 const { SessionKernelBrdge } = require('./models/kernel_bridge');
+const { JupyterDisplayableMessage } = require('./models/displayable_message');
 
 class MessageLoop {
     constructor(hostPort) {
         this._parentPort = hostPort;
         // TODO: obfuscate _kHostPort from the context (random variable name?)
         this._context = vm.createContext({
-            ...global, Promise,
-            _kHostPort: hostPort, SessionKernelBrdge
+            ...global, Promise, Error,
+            SessionKernelBrdge, JupyterDisplayableMessage,
+            _kHostPort: hostPort, _commManager: []
         });
     }
     
@@ -30,11 +32,10 @@ class MessageLoop {
             try {
                 let rawEvalResult = vm.runInContext([
                     '{',
-                        `const kernel = new SessionKernelBrdge(${id}, _kHostPort);`,
-                        'const print = kernel.print.bind(kernel);',
+                        `const kernel = new SessionKernelBrdge(_commManager, ${id}, _kHostPort);`,
                         args.code,
                     '}'
-                ].join(''), this._context);
+                ].join('\n'), this._context);
                 const tryHtmlResolutionFor = (result) => {
                     let { isHtml, promisedVal } = this._tryResolvingHtmlFrom(result);
 
@@ -50,16 +51,9 @@ class MessageLoop {
                     promisedEvalResult = tryHtmlResolutionFor(rawEvalResult);
                 }
             } catch (err) {
-                // TODO
-                promisedEvalResult = Promise.resolve(undefined);
+                promisedEvalResult = Promise.resolve(err);
             }
-
-            promisedEvalResult.then(evalResult => {
-                if (evalResult !== undefined) {
-                    evalResult = `${evalResult}`;
-                }
-                new SessionExecuteCodeResponse(id, args.executionCount, resultMimeType, evalResult).replyTo(this._parentPort);
-            });
+            promisedEvalResult.then(evalResult => new SessionExecuteCodeResponse(id, args.executionCount, resultMimeType, evalResult).replyTo(this._parentPort));
         }
     }
 

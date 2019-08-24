@@ -1,6 +1,7 @@
 const { Worker } = require('worker_threads');
 const { MainWorkerPath } = require('./main');
 
+const { SessionBaseEvent } = require('./events/base');
 const { SessionExecuteCodeRequest } = require('./requests/execute_code');
 
 class Session {
@@ -19,6 +20,7 @@ class Session {
             nextId: 1,
             pendingResolution: {}
         };
+        this._activeComms = {};
 
         // Server that runs the code requests for this session
         this._server = new Worker(MainWorkerPath);
@@ -55,6 +57,21 @@ class Session {
         return executeCodeRequest;
     }
 
+    addCommId(targetName, id) {
+        if (!this._activeComms[targetName]) {
+            this._activeComms[targetName] = [];
+        }
+        this._activeComms[targetName].push(id);
+    }
+    getCommIdsBy(targetName) {
+        let toRet = [];
+
+        if (this._activeComms[targetName]) {
+            toRet = this._activeComms[targetName];
+        }
+        return toRet;
+    }
+
     /**
      * Callback to handle messages from the session server
      */
@@ -62,7 +79,7 @@ class Session {
         let targetedPendingTask = this._tasks.pendingResolution[id];
 
         if (targetedPendingTask) {
-            if (type.endsWith('_event')) {
+            if (type.endsWith(SessionBaseEvent.name_suffix_marker)) {
                 targetedPendingTask.emit(type, args);
             } else {
                 // For all other message-type, resolve the pending request
@@ -75,36 +92,7 @@ class Session {
     }
 
     _runStartupScripts() {
-        let startupScripts;
-
-        if (this._startupScript) {
-            let stats = fs.lstatSync(this._startupScript);
-            if (stats.isDirectory()) {
-                let dir = this._startupScript;
-                startupScripts = fs.readdirSync(dir).filter((filename) => {
-                    let ext = filename.slice(filename.length - 3).toLowerCase();
-                    return ext === ".js";
-                })
-                .sort()
-                .map((filename) =>path.join(dir, filename));
-            } else if (stats.isFile()) {
-                startupScripts = [this._startupScript];
-            } else {
-                startupScripts = [];
-            }
-        } else {
-            startupScripts = [];
-        }
-        
-        startupScripts.forEach((script) => {
-            try {
-                let code = fs.readFileSync(script).toString();
-
-                this.execute(code);
-            } catch (e) {
-                // TODO: log this?
-            }
-        });
+        // TODO
     }
 }
 

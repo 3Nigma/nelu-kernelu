@@ -5,7 +5,24 @@ class SessionExecuteCodeResponse extends SessionBasicResponse {
         super(id, SessionBasicResponseTypes.ExecuteCode);
         this._executionCount = execCount;
         this._mimeType = mimeType;
-        this._result = result;
+
+        if (result === undefined) {
+            this._result = {
+                type: 'undefined'
+            };
+        } else if (result instanceof Error) {
+            this._result = {
+                type: 'error',
+                ename: `${result}`.split(':')[0],
+                evalue: result.message,
+                stack: result.stack
+            };
+        } else {
+            this._result = {
+                type: 'ok',
+                result: `${result}`
+            };
+        }
     }
 
     _args() {
