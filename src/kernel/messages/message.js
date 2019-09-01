@@ -9,6 +9,11 @@ class JupyterMessage {
     constructor(info, socketDestinationType) {
         this._info = info;
         this._targetingSocketType = socketDestinationType;
+
+        if (this._targetingSocketType) {
+            // Make sure the info is referencing the right channel
+            this._info.channel = this._targetingSocketType.name.toLowerCase();
+        }
     }
 
     get info() {

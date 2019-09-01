@@ -1,18 +1,18 @@
-const { SessionBaseEvent } = require('./base');
+const { SessionBasicPostable, SessionPostableCategories } = require('../base');
 
-class SessionDisplayDataEvent extends SessionBaseEvent {
+class SessionDisplayDataEvent extends SessionBasicPostable {
     static get type() {
-        return `session_display_data_${SessionBaseEvent.name_suffix_marker}`;
+        return 'session_display_data';
     }
     
-    constructor(skBridge, data, metadata, transient) {
-        super(skBridge);
+    constructor(pId, data, metadata, transient) {
+        super(pId, SessionPostableCategories.Event);
         this._data = data || {};
         this._metadata = metadata || {};
         this._transient = transient || {};
     }
 
-    get type() {
+    get _type() {
         return SessionDisplayDataEvent.type;
     }
 

@@ -2,11 +2,14 @@ const uuid = require("uuid");
 
 const { zmq, JupyterSocketTypes, JupyterSocket } = require("./kernel/socket");
 const { Session } = require("./session/session");
-const { DefaultRequestHandler,
-        KernelInfoRequestHandler,
+const { JupyterSendCommMessage } = require('./kernel/messages/flavours/comm_msg');
+const { CommMsgRequestHandler,
         CommInfoRequestHandler,
-        ShutdownRequestHandler,
-        ExecuteRequestHandler } = require('./kernel/messages/handlers');
+        DefaultRequestHandler,
+        ExecuteRequestHandler,
+        KernelInfoRequestHandler,
+        ShutdownRequestHandler } = require('./kernel/messages/handlers');
+const { SessionMessageCommEvent } = require('./session/postables/events/comm_msg');
 
 /**
  * Implements a Javascript kernel for IPython/Jupyter.
@@ -41,11 +44,22 @@ class Kernel {
         this._session = new Session({ startupScript });
         this._handlers = {
             _default: new DefaultRequestHandler(),
-            kernel_info_request: new KernelInfoRequestHandler(),
             comm_info_request: new CommInfoRequestHandler(),
-            shutdown_request: new ShutdownRequestHandler(),
-            execute_request: new ExecuteRequestHandler()
+            comm_msg: new CommMsgRequestHandler(),
+            execute_request: new ExecuteRequestHandler(),
+            kernel_info_request: new KernelInfoRequestHandler(),
+            shutdown_request: new ShutdownRequestHandler()
         };
+
+        // Tie event handlers to out-of-session events
+        this._session.on(SessionMessageCommEvent.type, ({ comm_id, data }) => {
+            let { pMessageInfo, innerData } = data;
+
+            JupyterSendCommMessage.newFor({ 
+                    pMessageInfo, comm_id, 
+                    data: innerData 
+                }).sendVia(this);
+        });
     }
 
     get logger() {

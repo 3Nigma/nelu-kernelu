@@ -1,11 +1,15 @@
+const EventEmitter = require('events');
+
 const { Worker } = require('worker_threads');
 const { MainWorkerPath } = require('./main');
 
-const { SessionBaseEvent } = require('./events/base');
-const { SessionExecuteCodeRequest } = require('./requests/execute_code');
+const { KernelOutOfExecuteEvent } = require('../kernel/events/base');
+const { OutOfExecuteTaskId, SessionPostableCategories } = require('./postables/base');
+const { SessionExecuteCodeRequest } = require('./postables/requests/execute_code');
 
-class Session {
+class Session extends EventEmitter {
     constructor (opts) {
+        super();
         this._defaultInternalsWith(opts);
     }
 
@@ -57,6 +61,18 @@ class Session {
         return executeCodeRequest;
     }
 
+    emit(...what) {
+        if (what.length === 1) {
+            if (what[0] instanceof KernelOutOfExecuteEvent) {
+                this._server.postMessage(what[0].description);
+            } else {
+                super.emit(what[0]);
+            }
+        } else {
+            super.emit(...what);
+        }
+    }
+
     addCommId(targetName, id) {
         if (!this._activeComms[targetName]) {
             this._activeComms[targetName] = [];
@@ -73,21 +89,32 @@ class Session {
     }
 
     /**
-     * Callback to handle messages from the session server
+     * Callback that handle messages coming from the VM Executor thread
      */
-    _onMessage({id, type, args}) {
-        let targetedPendingTask = this._tasks.pendingResolution[id];
-
-        if (targetedPendingTask) {
-            if (type.endsWith(SessionBaseEvent.name_suffix_marker)) {
-                targetedPendingTask.emit(type, args);
+    _onMessage({id, category, type, args}) {
+        if (id === OutOfExecuteTaskId) {
+            // An out of session message was received. Unpack its parentHeader before proceeding
+            if (category === SessionPostableCategories.Event) {
+                this.emit(type, args);
             } else {
-                // For all other message-type, resolve the pending request
-                // TODO: we should also remove it from the list
-                targetedPendingTask.resolveWith(args);
+                // No-op since out of session task responses are not permitted
             }
         } else {
-            // TODO: the provided id does not target a valid pending task
+            let targetedPendingTask = this._tasks.pendingResolution[id];
+
+            if (targetedPendingTask) {
+                if (category === SessionPostableCategories.Event) {
+                    targetedPendingTask.emit(type, args);
+                } else {
+                    // For all other message-type, resolve the pending request
+                    // TODO: we should also remove it from the list
+                    // TODO: only resolve if it's the same type as the initial request
+                    //       otherwise maybe create a task to the kernel?
+                    targetedPendingTask.resolveWith(args);
+                }
+            } else {
+                // TODO: we should log this. This should never happen
+            }
         }
     }
 

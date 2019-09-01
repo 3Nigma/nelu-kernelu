@@ -7,12 +7,12 @@ const { JupyterExecuteReplyMessage } = require('../flavours/execute_reply');
 const { JupyterExecuteResultMessage } = require('../flavours/execute_result');
 const { JupyterErrorMessage } = require('../flavours/error');
 
-const { SessionPrintEvent } = require('../../../session/events/print');
-const { SessionCreateCommEvent } = require('../../../session/events/comm_create');
+const { SessionPrintEvent } = require('../../../session/postables/events/print');
+const { SessionCreateCommEvent } = require('../../../session/postables/events/comm_create');
 const { JupyterOpenCommMessage } = require('../flavours/comm_open');
-const { SessionMessageCommEvent } = require('../../../session/events/comm_msg');
+const { SessionMessageCommEvent } = require('../../../session/postables/events/comm_msg');
 const { JupyterSendCommMessage } = require('../flavours/comm_msg');
-const { SessionDisplayDataEvent } = require('../../../session/events/display_data');
+const { SessionDisplayDataEvent } = require('../../../session/postables/events/display_data');
 const { JupyterDisplayDataMessage } = require('../flavours/display_data');
 
 class ExecuteRequestHandler extends BasicRequestHandler {
@@ -36,7 +36,7 @@ class ExecuteRequestHandler extends BasicRequestHandler {
                 JupyterOpenCommMessage.newFor(message, comm_id, target_name, data, meta).sendVia(sKernel);
             });
             codeExecutionTask.on(SessionMessageCommEvent.type, ({ comm_id, data }) => {
-                JupyterSendCommMessage.newFor(message, comm_id, data).sendVia(sKernel);
+                JupyterSendCommMessage.newFor({ oMessage, comm_id, data }).sendVia(sKernel);
             });
             codeExecutionTask.on(SessionDisplayDataEvent.type, ({ data, metadata, transient }) => {
                 JupyterDisplayDataMessage.newFor(message, data, metadata, transient).sendVia(sKernel);
