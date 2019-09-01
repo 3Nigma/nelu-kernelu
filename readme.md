@@ -1,11 +1,15 @@
 A modern, Promise ready, NodeJS Jupyter _5.2.3_ Kernel with comm and display support.
 
 ## Supported features
-* Allows both plain cell results and promisified values that resolve to such
+* Allows plain cell results  
+![plain results](/imgs/own/nk_execute_plain.png)
+* Resolves promisified values into plain results  
+![promise results](/imgs/own/nk_execute_promise.png)
 * Creating and working with comms from within a cell (via Jupyter `comm_create` and `comm_msg`)
 * Capable of handling comm messages originating from the kernel
 * Displaying custom MIME specific content (via Jupyter `display_create` messages)
 * Printing messages (via `stream` messages) 
+* Restarting the kernel via the Notebook UI 
 * Error stack tracing
 
 ## Installing
