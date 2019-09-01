@@ -50,7 +50,7 @@ The registered message handler will receive one parameter which will always be a
 ## Displaying into the output cell
 To display something into an output cell, you need to call `kernel.display` on an instance of a class that extends `JupyterDisplayableMessage` in which you overwrite `_toDisplay()` returning whatever JS object you would like to display as a result.
 Here's an example:  
-![kernel.display(JupyterDisplayableMessage)](/imgs/own/nb_kernel_display.png)
+![kernel.display(JupyterDisplayableMessage)](/imgs/own/nk_kernel_display.png)
 
 ## Still needs to be done
 * Handling of `comm_close` messages
