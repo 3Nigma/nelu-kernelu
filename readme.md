@@ -21,10 +21,10 @@ Due to security considerations, the following NodeJS objects are not available t
 Whenever a Notebook is started which targets this NodeJS kernel, a special `kernel` object is created and made available on each and every code cell. This object exposes kernel functionality into cell-space. 
 
 ## Logging messages 
-can be achieved via doing a `kernel.print()` call passing in the `string` that you want shown underneath the cell like so:
-![kernel.print(string)](https://github.com/3Nigma/nelu-kernelu/imgs/own/nk_kernel_print_string.png)
-If you want to get fancy, you can also work with formattable constructs the same way you would go using [util.format](https://nodejs.org/api/util.html#util_util_format_format_args). Thus, you can do things like:
-![kernel.print(format[, ...args])](https://github.com/3Nigma/nelu-kernelu/imgs/own/nk_kernel_print_format.png)
+can be achieved via doing a `kernel.print()` call passing in the `string` that you want shown underneath the cell like so:  
+![kernel.print(string)](/imgs/own/nk_kernel_print_string.png)
+If you want to get fancy, you can also work with formattable constructs the same way you would go using [util.format](https://nodejs.org/api/util.html#util_util_format_format_args). Thus, you can do things like:  
+![kernel.print(format[, ...args])](/imgs/own/nk_kernel_print_format.png)
 Note: By design, `console.log` does not have the same effect as `kernel.print`. Using the traditional `console.log` has the effect of logging to the system console instead of the user's notebook.
 
 ## Dealing with communication channels (comms)
@@ -49,8 +49,8 @@ The registered message handler will receive one parameter which will always be a
 
 ## Displaying into the output cell
 To display something into an output cell, you need to call `kernel.display` on an instance of a class that extends `JupyterDisplayableMessage` in which you overwrite `_toDisplay()` returning whatever JS object you would like to display as a result.
-Here's an example:
-![kernel.display(JupyterDisplayableMessage)](https://github.com/3Nigma/nelu-kernelu/imgs/own/nk_kernel_display.png)
+Here's an example:  
+![kernel.display(JupyterDisplayableMessage)](/imgs/own/nk_kernel_display.png)
 
 ## Still needs to be done
 * Handling of `comm_close` messages
