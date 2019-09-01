@@ -19,9 +19,11 @@ class MessageLoop {
         this._context = vm.createContext({
             // Built in elements
             console,
+            __dirname, __filename,
             setImmediate, setInterval, setTimeout,
             clearImmediate, clearInterval, clearTimeout,
             exports, module, require,
+            Buffer, URL, URLSearchParams, WebAssembly,
             Promise, Error,
 
             // Own types and definitions
