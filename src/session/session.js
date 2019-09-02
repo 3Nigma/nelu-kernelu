@@ -64,11 +64,14 @@ class Session extends EventEmitter {
     emit(...what) {
         if (what.length === 1) {
             if (what[0] instanceof KernelOutOfExecuteEvent) {
+                // OOE messages are meant to hit the execution thread
                 this._server.postMessage(what[0].description);
             } else {
+                // ... while all other emited things are broadcasted to the instance's listeners
                 super.emit(what[0]);
             }
         } else {
+            // Default to event broadcasting to the event handlers
             super.emit(...what);
         }
     }

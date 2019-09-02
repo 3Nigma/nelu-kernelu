@@ -3,6 +3,7 @@ const { MessageChannel } = require('worker_threads');
 
 const { SessionExecuteCodeRequest } = require('./postables/requests/execute_code');
 const { KernelOutOfExecuteMessageCommEvent } = require('../kernel/events/comm_msg');
+const { KernelOutOfExecuteInfoEvent } = require('../kernel/events/kernel_info');
 
 const { SessionExecuteCodeResponse } = require('./responses/execute_code');
 const { SessionKernelComm } = require('./models/kernel_comm');
@@ -13,6 +14,7 @@ const { SessionCommManager } = require('./models/comm_manager');
 class MessageLoop {
     constructor(hostPort) {
         this._parentPort = hostPort;
+        this._username = "unknown";
         this._commManager = new SessionCommManager();
 
         // TODO: obfuscate _kHostPort/_commManager from the context (random variable name?)
@@ -57,14 +59,23 @@ class MessageLoop {
 
     _handleMessage({id, category, type, parentMessage, args}) {
         if (category === 'event') {
-            if (type === KernelOutOfExecuteMessageCommEvent.type) {
-                let { comm_id, data } = args;
-                let targetingComm = this._commManager.findBy({id: comm_id });
-                
-                if (targetingComm !== undefined) {
-                    targetingComm._bindTo({ originatingMessageInfo: parentMessage });
-                    targetingComm.emit("message", { data });
-                }
+            switch(type) {
+                case KernelOutOfExecuteMessageCommEvent.type:
+                    const { comm_id, data } = args;
+                    const targetingComm = this._commManager.findBy({id: comm_id });
+                    
+                    if (targetingComm !== undefined) {
+                        targetingComm._bindTo({ originatingMessageInfo: parentMessage });
+                        targetingComm.emit("message", { data });
+                    }
+                    break;
+                case KernelOutOfExecuteInfoEvent.type:
+                    const { username } = args;
+
+                    this._username = username;
+                    break;
+                default:
+                    console.log(`'${type}' is not handled in the session MessageLoop.`);
             }
         } else if (category === 'request') {
             // TODO: implement stuff as appropriate
@@ -78,12 +89,10 @@ class MessageLoop {
         
         this._executeCodeSourcePort.onmessage = null;
         try {
-            let rawEvalResult = vm.runInContext([
-                '{',
-                    `var kernel = new SessionKernelBrdge(_commManager, ${id}, _kHostPort);`,
-                    args.code,
-                '}'
-            ].join('\n'), this._context);
+            let rawEvalResult = vm.runInContext(`{
+                    var kernel = new SessionKernelBrdge(${id}, "${this._username}", _kHostPort, _commManager);
+                    ${args.code}
+                }`, this._context);
             const tryHtmlResolutionFor = (result) => {
                 let { isHtml, promisedVal } = this._tryResolvingHtmlFrom(result);
 

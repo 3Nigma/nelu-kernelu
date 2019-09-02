@@ -5,9 +5,10 @@ const { SessionKernelComm } = require('../models/kernel_comm');
 const { JupyterDisplayableMessage } = require('../models/displayable_message');
 
 class SessionKernelBrdge {
-    constructor(commManager, taskId, hostPort) {
-        this._commManager = commManager;
+    constructor(taskId, username, hostPort, commManager) {
         this._tId = taskId;
+        this._username = username;
+        this._commManager = commManager;
         this._hostPort = hostPort;
 
         // Make sure that the commManager is aware of the bridge
@@ -17,6 +18,9 @@ class SessionKernelBrdge {
 
     get taskId() {
         return this._tId;
+    }
+    get userName() {
+        return this._username;
     }
 
     print(...what) {
