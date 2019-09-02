@@ -43,7 +43,6 @@ class SessionKernelComm extends EventEmitter {
             targetingTaskId = this._kernel.taskId;
         }
         const commMsg = new SessionMessageCommEvent(targetingTaskId, this._cId, data);
-        console.log(JSON.stringify(commMsg.description));
 
         return commMsg.postTo(this._hostPort);
     }
