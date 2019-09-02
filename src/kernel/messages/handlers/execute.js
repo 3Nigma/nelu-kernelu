@@ -36,7 +36,7 @@ class ExecuteRequestHandler extends BasicRequestHandler {
                 JupyterOpenCommMessage.newFor(message, comm_id, target_name, data, meta).sendVia(sKernel);
             });
             codeExecutionTask.on(SessionMessageCommEvent.type, ({ comm_id, data }) => {
-                JupyterSendCommMessage.newFor({ oMessage, comm_id, data }).sendVia(sKernel);
+                JupyterSendCommMessage.newFor({ oMessage: message, comm_id, data }).sendVia(sKernel);
             });
             codeExecutionTask.on(SessionDisplayDataEvent.type, ({ data, metadata, transient }) => {
                 JupyterDisplayDataMessage.newFor(message, data, metadata, transient).sendVia(sKernel);
