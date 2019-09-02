@@ -5,23 +5,10 @@ class KernelOutOfExecuteMessageCommEvent extends KernelOutOfExecuteEvent {
         return 'kernel_oos_msg_comm';
     }
 
-    constructor(ksBridge, originatingMsgInfo, cId, data) {
-        super();
-        this._ksBridge = ksBridge;
-        this._sourceMsgInfo = originatingMsgInfo;
+    constructor(originatingMsgInfo, cId, data) {
+        super(originatingMsgInfo, KernelOutOfExecuteMessageCommEvent.type);
         this._cId = cId;
         this._data = data;
-    }
-
-    get description() {
-        // TODO: refactor this
-        return {
-            id: 0,
-            category: 'event',
-            type: KernelOutOfExecuteMessageCommEvent.type,
-            parentMessage: this._sourceMsgInfo,
-            args: this._args
-        };
     }
 
     get _args() {
@@ -29,10 +16,6 @@ class KernelOutOfExecuteMessageCommEvent extends KernelOutOfExecuteEvent {
             comm_id: this._cId,
             data: this._data
         };
-    }
-
-    send() {
-        this._ksBridge.emit(this);
     }
 }
 

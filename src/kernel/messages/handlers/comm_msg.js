@@ -6,7 +6,7 @@ class CommMsgRequestHandler extends BasicRequestHandler {
         const { comm_id, data } = message.info.content;
 
         // Just dispatch this to the session
-        new KernelOutOfExecuteMessageCommEvent(sKernel.session, message.info, comm_id, data).send();
+        new KernelOutOfExecuteMessageCommEvent(message.info, comm_id, data).emitThrough(sKernel.session);
     }
 }
 
