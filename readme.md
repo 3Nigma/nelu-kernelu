@@ -1,4 +1,4 @@
-A modern, Promise ready, NodeJS Jupyter _5.2.3_ Kernel with comm and display support.
+A modern, Promise ready, NodeJS Jupyter _5.2.3_ Kernel with comm and display support. This work was heavily inspired by [Nicolas Riesco](https://github.com/n-riesco)'s [IJavascript kernel](https://github.com/n-riesco/ijavascript) and is, in some sense, a continuation of that.
 
 ## Supported features
 * Allows plain cell results  
@@ -24,6 +24,9 @@ Due to security considerations, the following NodeJS objects are not available t
 
 # API
 Whenever a Notebook is started which targets this NodeJS kernel, a special `kernel` object is created and made available on each and every code cell. This object exposes kernel functionality into cell-space. 
+
+## Getting the running user-name
+To get the current running user-name, just call `kernel.userName`. This is helpful to deduce the current user especially in hub-like (+ oAuth) environments.
 
 ## Logging messages 
 can be achieved via doing a `kernel.print()` call passing in the `string` that you want shown underneath the cell like so:  
