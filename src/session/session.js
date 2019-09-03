@@ -16,7 +16,8 @@ class Session extends EventEmitter {
     _defaultInternals() {
         this._defaultInternalsWith({});
     }
-    _defaultInternalsWith({ startupScript }) {
+    _defaultInternalsWith({ logger, startupScript }) {
+        this._logger = logger;
         this._executionCount = 1;
         this._startupScript = startupScript || this._startupScript;
 
@@ -51,6 +52,7 @@ class Session extends EventEmitter {
         let executeCodeRequest = new SessionExecuteCodeRequest(this._tasks.nextId, this._executionCount, code);
 
         // Store the request
+        this._logger.debug(`Dispatching an ExecuteCodeRequest to the session wrapping: ${code}`);
         this._tasks.pendingResolution[this._tasks.nextId] = executeCodeRequest;
         executeCodeRequest.postTo(this._server);
 
@@ -65,6 +67,7 @@ class Session extends EventEmitter {
         if (what.length === 1) {
             if (what[0] instanceof KernelOutOfExecuteEvent) {
                 // OOE messages are meant to hit the execution thread
+                this._logger.debug(`Kernel is dispatching an OOE event to the session: ${JSON.stringify(what[0].description)}`);
                 this._server.postMessage(what[0].description);
             } else {
                 // ... while all other emited things are broadcasted to the instance's listeners

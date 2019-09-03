@@ -45,7 +45,7 @@ class Kernel {
         this._sockets[JupyterSocketTypes.CONTROL].on("message", this._onKernelMessage.bind(this));
 
         // Initialize more complex objects
-        this._session = new Session({ startupScript });
+        this._session = new Session({ logger, startupScript });
         this._handlers = {
             _default: new DefaultRequestHandler(this),
             comm_info_request: new CommInfoRequestHandler(this),
@@ -115,7 +115,7 @@ class Kernel {
         this._logger.silly(`Received a '${messageType}' message.`);
         try {
             requestHandler.handle(msg);
-            this._logger.silly(`Handled`);
+            this._logger.silly(`Handled '${messageType}'`);
         } catch (e) {
             this._logger.error(`Exception in ${messageType} handler: ${e}`);
         }
