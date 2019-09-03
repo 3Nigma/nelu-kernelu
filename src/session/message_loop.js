@@ -72,7 +72,11 @@ class MessageLoop {
                 case KernelOutOfExecuteInfoEvent.type:
                     const { username } = args;
 
-                    this._username = username;
+                    if ("username" !== username) {
+                        this._username = username;
+                    } else {
+                        // Discard this info-update since it's not providing anything useful
+                    }
                     break;
                 default:
                     console.log(`'${type}' is not handled in the session MessageLoop.`);
