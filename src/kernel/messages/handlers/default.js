@@ -1,6 +1,10 @@
-const { BasicRequestHandler } = require('./basic');
+const { BaseRequestHandler } = require('./base');
 
-class DefaultRequestHandler extends BasicRequestHandler {
+class DefaultRequestHandler extends BaseRequestHandler {
+    constructor(handlingKernel) {
+        super(handlingKernel);
+    }
+    
     _handle(sKernel, message) {
         let messageType = message.info.header.msg_type;
 

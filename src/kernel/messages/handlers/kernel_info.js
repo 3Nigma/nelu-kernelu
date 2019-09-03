@@ -1,9 +1,13 @@
-const { BasicRequestHandler } = require('./basic');
+const { BaseRequestHandler } = require('./base');
 const { JupyterInfoMessage } = require('../flavours/kernel_info_reply');
 
 const { KernelOutOfExecuteInfoEvent } = require('../../events/kernel_info');
 
-class KernelInfoRequestHandler extends BasicRequestHandler {
+class KernelInfoRequestHandler extends BaseRequestHandler {
+    constructor(handlingKernel) {
+        super(handlingKernel);
+    }
+    
     _handle(sKernel, message) {
         const username = message.info.header.username;
 

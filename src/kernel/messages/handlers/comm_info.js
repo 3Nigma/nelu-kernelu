@@ -1,7 +1,11 @@
-const { BasicRequestHandler } = require('./basic');
+const { BaseRequestHandler } = require('./base');
 const { JupyterCommInfoReplyMessage } = require('../flavours/comm_info_reply');
 
-class CommInfoRequestHandler extends BasicRequestHandler {
+class CommInfoRequestHandler extends BaseRequestHandler {
+    constructor(handlingKernel) {
+        super(handlingKernel);
+    }
+    
     _handle(sKernel, message) {
         let targetName = message.info.content.target_name;
         let commInfosForTarget = {};

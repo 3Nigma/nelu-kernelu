@@ -29,11 +29,15 @@ class Kernel {
         this._hbSocket.bindSync(`tcp://${this._connection.ip}:${this._connection.hb_port}`);
 
         // Setup data socket streams
+        const jsOptions = {
+            identity: this._identity,
+            connectionInfo: this._connection
+        };
         this._sockets = {
-            [JupyterSocketTypes.IOPub]: new JupyterSocket(JupyterSocketTypes.IOPub, this),
-            [JupyterSocketTypes.STDIn]: new JupyterSocket(JupyterSocketTypes.STDIn, this),
-            [JupyterSocketTypes.SHELL]: new JupyterSocket(JupyterSocketTypes.SHELL, this),
-            [JupyterSocketTypes.CONTROL]: new JupyterSocket(JupyterSocketTypes.CONTROL, this)
+            [JupyterSocketTypes.IOPub]: new JupyterSocket(JupyterSocketTypes.IOPub, jsOptions),
+            [JupyterSocketTypes.STDIn]: new JupyterSocket(JupyterSocketTypes.STDIn, jsOptions),
+            [JupyterSocketTypes.SHELL]: new JupyterSocket(JupyterSocketTypes.SHELL, jsOptions),
+            [JupyterSocketTypes.CONTROL]: new JupyterSocket(JupyterSocketTypes.CONTROL, jsOptions)
         };
         this._sockets[JupyterSocketTypes.IOPub].on("message", this._onKernelMessage.bind(this));
         this._sockets[JupyterSocketTypes.STDIn].on("message", this._onStdinMessage.bind(this));
@@ -43,12 +47,12 @@ class Kernel {
         // Initialize more complex objects
         this._session = new Session({ startupScript });
         this._handlers = {
-            _default: new DefaultRequestHandler(),
-            comm_info_request: new CommInfoRequestHandler(),
-            comm_msg: new CommMsgRequestHandler(),
-            execute_request: new ExecuteRequestHandler(),
-            kernel_info_request: new KernelInfoRequestHandler(),
-            shutdown_request: new ShutdownRequestHandler()
+            _default: new DefaultRequestHandler(this),
+            comm_info_request: new CommInfoRequestHandler(this),
+            comm_msg: new CommMsgRequestHandler(this),
+            execute_request: new ExecuteRequestHandler(this),
+            kernel_info_request: new KernelInfoRequestHandler(this),
+            shutdown_request: new ShutdownRequestHandler(this)
         };
 
         // Tie event handlers to out-of-session events
@@ -104,20 +108,20 @@ class Kernel {
         return killCode;
     }
 
-    async _onKernelMessage(origin) {
-        let messageType = origin.message.info.header.msg_type;
+    async _onKernelMessage(msg) {
+        let messageType = msg.info.header.msg_type;
         let requestHandler = this._getRequestHandlerByType(messageType);
 
         this._logger.silly(`Received a '${messageType}' message.`);
         try {
-            requestHandler.handle(origin);
+            requestHandler.handle(msg);
             this._logger.silly(`Handled`);
         } catch (e) {
             this._logger.error(`Exception in ${messageType} handler: ${e}`);
         }
     }
 
-    _onStdinMessage(origin) {
+    _onStdinMessage(msg) {
         // TODO: handle these types of messages at some point
     }
 

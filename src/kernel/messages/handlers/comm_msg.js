@@ -1,7 +1,11 @@
-const { BasicRequestHandler } = require('./basic');
+const { BaseRequestHandler } = require('./base');
 const { KernelOutOfExecuteMessageCommEvent } = require('../../events/comm_msg');
 
-class CommMsgRequestHandler extends BasicRequestHandler {
+class CommMsgRequestHandler extends BaseRequestHandler {
+    constructor(handlingKernel) {
+        super(handlingKernel);
+    }
+    
     _handle(sKernel, message) {
         const { comm_id, data } = message.info.content;
 

@@ -4,9 +4,8 @@ const { JupyterMessage } = require('./messages/message');
 const { JupyterRequestMessage } = require('./messages/request');
 
 class WrappedMessageHandler extends Function {
-    constructor(kernel, handler, wrapper) {
+    constructor(handler, wrapper) {
         super('...args', 'return this.__call__(...args)');
-        this._kernel = kernel;
         this._handler = handler;
         this._wrapper = wrapper;
         return this.bind(this);
@@ -20,18 +19,16 @@ class WrappedMessageHandler extends Function {
     __call__(...msgs) {
         let wrapperResult = this._wrapper(msgs);
         if (wrapperResult && this._handler) {
-            this._handler({
-                kernel: this._kernel,
-                message: wrapperResult
-            });
+            this._handler(wrapperResult);
         }
     }
 }
 
 class JupyterSocketType {
-    constructor(name, zmqSocketType, connPropertyName) {
+    constructor(name, zmqSocketType, zmqTestableSocketType, connPropertyName) {
         this._name = name;
         this._type = zmqSocketType;
+        this._testableType = zmqTestableSocketType;
         this._connPropName = connPropertyName;
     }
 
@@ -45,6 +42,9 @@ class JupyterSocketType {
     get type() {
         return this._type;
     }
+    get testableType() {
+        return this._testableType;
+    }
     get name() {
         return this._name;
     }
@@ -54,25 +54,24 @@ class JupyterSocketType {
 }
 
 const JupyterSocketTypes = {
-    IOPub: new JupyterSocketType("IOPub", "pub", "iopub_port"),
-    STDIn: new JupyterSocketType("STDIn", "router", "stdin_port"),
-    SHELL: new JupyterSocketType("SHELL", "router", "shell_port"),
-    CONTROL: new JupyterSocketType("CONTROL", "router", "control_port")
+    IOPub: new JupyterSocketType("IOPub", "pub", "sub", "iopub_port"),
+    STDIn: new JupyterSocketType("STDIn", "router", "dealer", "stdin_port"),
+    SHELL: new JupyterSocketType("SHELL", "router", "dealer", "shell_port"),
+    CONTROL: new JupyterSocketType("CONTROL", "router", "dealer", "control_port")
 };
 
 /**
  * ZMQ socket that parses the Jupyter Messaging Protocol
  */
 class JupyterSocket extends zmq.Socket {
-    constructor (jsType, kernel) {
+    constructor (jsType, { identity, connectionInfo } ) {
         super(jsType.type);
-        this.identity = kernel.identity;    // ZMQ Identity
+        this.identity = identity;    // ZMQ Identity
 
         this._jsTypeInfo = jsType;
-        this._kernel = kernel;
-        this._address = `tcp://${kernel.connectionInfo.ip}:${kernel.connectionInfo[jsType.connectionKey]}`;
-        this._scheme = kernel.connectionInfo.signature_scheme.slice("hmac-".length);
-        this._key = kernel.connectionInfo.key;
+        this._address = `tcp://${connectionInfo.ip}:${connectionInfo[jsType.connectionKey]}`;
+        this._scheme = connectionInfo.signature_scheme.slice("hmac-".length);
+        this._key = connectionInfo.key;
         this._listeners = [];
     }
 
@@ -111,7 +110,6 @@ class JupyterSocket extends zmq.Socket {
 
         if (event === "message") {
             let _wrappedListener = new WrappedMessageHandler(
-                this._kernel,
                 listener, 
                 (msgs) => JupyterRequestMessage.newFor(msgs, this._scheme, this._key));
             this._listeners.push(_wrappedListener);
