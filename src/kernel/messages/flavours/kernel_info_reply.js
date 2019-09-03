@@ -9,7 +9,7 @@ class JupyterInfoMessage extends JupyterMessage {
         let jjsVersion = packageVersion;
         let kInfo = {
             "protocol_version": clientProtocolVersion,
-            "implementation": "jeyksnib",
+            "implementation": "nelu-kernelu",
             "implementation_version": jjsVersion,
             "language_info": {
                 "name": "javascript",
@@ -18,12 +18,12 @@ class JupyterInfoMessage extends JupyterMessage {
                 "file_extension": ".js",
             },
             "banner": (
-                "jeyksnib v" + jjsVersion + "\n" +
-                "https://github.com/3Nigma/jeyksnib\n"
+                "nelu-kernelu v" + jjsVersion + "\n" +
+                "https://github.com/3Nigma/nelu-kernelu\n"
             ),
             "help_links": [{
-                "text": "jeyksnib Homepage",
-                "url": "https://github.com/3Nigma/jeyksnib",
+                "text": "nelu-kernelu's Homepage",
+                "url": "https://github.com/3Nigma/nelu-kernelu",
             }]
         };
 
