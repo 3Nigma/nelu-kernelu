@@ -11,6 +11,11 @@ const { SessionKernelBrdge } = require('./models/kernel_bridge');
 const { JupyterDisplayableMessage } = require('./models/displayable_message');
 const { SessionCommManager } = require('./models/comm_manager');
 
+const { SessionClearableTimer, 
+        PromisifiedImediate,
+        PromisifiedInterval,
+        PromisifiedTimeout } = require('./models/promisified_timers');
+
 class MessageLoop {
     constructor(hostPort) {
         this._parentPort = hostPort;
@@ -22,13 +27,18 @@ class MessageLoop {
             // Built in elements
             console,
             __dirname, __filename,
-            setImmediate, setInterval, setTimeout,
-            clearImmediate, clearInterval, clearTimeout,
+            setImmediate: (f, ...args) => new PromisifiedImediate(f, ...args), 
+            setInterval: (f, time, ...args) => new PromisifiedInterval(f, time, ...args), 
+            setTimeout: (f, time, ...args) => new PromisifiedTimeout(f, time, ...args),
+            clearImmediate: (t) => { if (t instanceof SessionClearableTimer) t._clear(); else clearImmediate(t) }, 
+            clearInterval: (t) => { if (t instanceof SessionClearableTimer) t._clear(); else clearInterval(t) }, 
+            clearTimeout: (t) => { if (t instanceof SessionClearableTimer) t._clear(); else clearTimeout(t) },
             exports, module, require,
             Buffer, URL, URLSearchParams, WebAssembly,
             Promise, Error,
 
             // Own types and definitions
+            SessionClearableTimer,
             SessionKernelBrdge, JupyterDisplayableMessage, 
             SessionKernelComm, SessionCommManager,
             _commManager: this._commManager,
@@ -86,8 +96,12 @@ class MessageLoop {
         }
     }
 
+    /**
+     * Note: This method assumes that category === 'request' and type === SessionExecuteCodeRequest.type
+     * 
+     * @param {} - task id and code to excute 
+     */
     _handleExecuteCodeRequest({id, args}) {
-        // assume category === 'request' and type === SessionExecuteCodeRequest.type
         let resultMimeType = 'text/plain';
         let promisedEvalResult;
         
@@ -108,6 +122,8 @@ class MessageLoop {
 
             if (rawEvalResult instanceof Promise) {
                 promisedEvalResult = rawEvalResult.then(resolvedResult => tryHtmlResolutionFor(resolvedResult));
+            } else if (rawEvalResult instanceof SessionClearableTimer) {
+                promisedEvalResult = rawEvalResult._waitForTrigger().then(resolvedResult => tryHtmlResolutionFor(resolvedResult));
             } else {
                 promisedEvalResult = tryHtmlResolutionFor(rawEvalResult);
             }
