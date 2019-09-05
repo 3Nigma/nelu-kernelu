@@ -54,7 +54,7 @@ process.on("uncaughtException", err => {
 // Start kernel
 let kernel = new Kernel({
     logger,
-    protocolVersion: "5.2.3",
+    protocolVersion: "5.3",
     connection: JSON.parse(fs.readFileSync(argv['connection-file'])),
     startupScript: null
 });
