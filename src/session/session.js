@@ -17,7 +17,7 @@ class Session extends EventEmitter {
         this._defaultInternalsWith({});
     }
     _defaultInternalsWith({ logger, startupScript }) {
-        this._logger = logger;
+        this._logger = logger || this._logger;
         this._executionCount = 1;
         this._startupScript = startupScript || this._startupScript;
 
