@@ -1,5 +1,5 @@
 {
-    "name": "jeyksnib",
+    "name": "nelu-kernelu",
     "version": "5.1.0",
     "description": "Yet another JS Kernel for Jupyter Notebooks",
     "keywords": [
@@ -8,9 +8,9 @@
         "ipython",
         "jupyter"
     ],
-    "homepage": "https://3Nigma.github.io/jeyksnib",
+    "homepage": "https://3Nigma.github.io/nelu-kernelu",
     "bugs": {
-        "url": "https://3Nigma.github.io/jeyksnib/issues"
+        "url": "https://3Nigma.github.io/nelu-kernelu/issues"
     },
     "license": "GPLv3",
     "author": {
@@ -19,7 +19,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://3Nigma.github.io/jeyksnib.git"
+        "url": "https://3Nigma.github.io/nelu-kernelu.git"
     },
     "dependencies": {
         "pkginfo": "^0.4.1",
