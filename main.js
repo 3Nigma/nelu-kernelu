@@ -42,11 +42,6 @@ if (process.env.NODE_ENV !== 'production') {
     logger.add(new transports.Console());
 }
 
-// Handle process messages (like SIGINT)
-process.on("SIGINT", async () => {
-    logger.debug("Interrupting kernel");
-    await kernel.destroy();
-});
 process.on("uncaughtException", err => {
     logger.error(`An uncaught exception triggered in the kernel: ${err}\nStack dumped: ${err.stack}`);
 });

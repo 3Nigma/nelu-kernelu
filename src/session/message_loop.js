@@ -1,5 +1,5 @@
 const vm = require('vm');
-const { MessageChannel } = require('worker_threads');
+const { MessageChannel, receiveMessageOnPort } = require('worker_threads');
 
 const { SessionExecuteCodeRequest } = require('./postables/requests/execute_code');
 const { KernelOutOfExecuteMessageCommEvent } = require('../kernel/events/comm_msg');
@@ -101,16 +101,19 @@ class MessageLoop {
      * 
      * @param {} - task id and code to excute 
      */
-    _handleExecuteCodeRequest({id, args}) {
+    _handleExecuteCodeRequest(msgEvent) {
+        const {id, args} = msgEvent.data;
         let resultMimeType = 'text/plain';
         let promisedEvalResult;
-        
+
         this._executeCodeSourcePort.onmessage = null;
         try {
             let rawEvalResult = vm.runInContext(`{
                     var kernel = new SessionKernelBrdge(${id}, "${this._username}", _kHostPort, _commManager);
                     ${args.code}
-                }`, this._context);
+                }`, this._context, {
+                    breakOnSigint: true
+                });
             const tryHtmlResolutionFor = (result) => {
                 let { isHtml, promisedVal } = this._tryResolvingHtmlFrom(result);
 
@@ -122,18 +125,44 @@ class MessageLoop {
 
             if (rawEvalResult instanceof Promise) {
                 promisedEvalResult = rawEvalResult.then(resolvedResult => tryHtmlResolutionFor(resolvedResult));
-            } else if (rawEvalResult instanceof SessionClearableTimer) {
-                promisedEvalResult = rawEvalResult._waitForTrigger().then(resolvedResult => tryHtmlResolutionFor(resolvedResult));
             } else {
                 promisedEvalResult = tryHtmlResolutionFor(rawEvalResult);
             }
         } catch (err) {
-            promisedEvalResult = Promise.resolve(err);
+            promisedEvalResult = Promise.reject(err);
         }
         promisedEvalResult.then(evalResult => {
+            new SessionExecuteCodeResponse(id, args.executionCount, resultMimeType, false, evalResult).replyTo(this._parentPort);
+        }).catch(err => {
+            if (err.code === 'ERR_SCRIPT_EXECUTION_INTERRUPTED') {
+                // Resolve all pending executions to 'aborted' and discard whatever else we have in the kernel-port
+                let portMessages = [];
+                let pendingMessage;
+
+                // Try to flush both the inner-code execution port (when long lasting op is pending as a event loop callback eg. via timer callback) and
+                // the main executor one
+                while((pendingMessage = receiveMessageOnPort(this._executeCodeSourcePort)) !== undefined) {
+                    portMessages.push(pendingMessage);
+                }
+                while((pendingMessage = receiveMessageOnPort(this._parentPort)) !== undefined) {
+                    portMessages.push(pendingMessage);
+                }
+
+                // Process all pending messages in a single loop
+                portMessages.forEach(portMessage => {
+                    const pendingPortMessage = portMessage.message;
+                    if (pendingPortMessage.category === 'request' && pendingPortMessage.type === SessionExecuteCodeRequest.type) {
+                        const {id, args} = pendingPortMessage;
+
+                        new SessionExecuteCodeResponse(id, args.executionCount, resultMimeType, true).replyTo(this._parentPort);
+                    }
+                });
+            }
+            console.error('Evaluator execution exception occured:', err);
+            new SessionExecuteCodeResponse(id, args.executionCount, resultMimeType, false, err).replyTo(this._parentPort);
+        }).finally(() => {
             // Resume the inner code-request queue
             this._executeCodeSourcePort.onmessage = this._handleExecuteCodeRequest.bind(this);
-            new SessionExecuteCodeResponse(id, args.executionCount, resultMimeType, evalResult).replyTo(this._parentPort);
         });
     }
 

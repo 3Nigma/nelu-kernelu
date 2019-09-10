@@ -1,27 +1,33 @@
 const { SessionBasicResponse, SessionBasicResponseTypes } = require('./base');
 
 class SessionExecuteCodeResponse extends SessionBasicResponse {
-    constructor(id, execCount, mimeType, result) {
+    constructor(id, execCount, mimeType, wasItAborted, result) {
         super(id, SessionBasicResponseTypes.ExecuteCode);
         this._executionCount = execCount;
         this._mimeType = mimeType;
 
-        if (result === undefined) {
+        if (wasItAborted) {
             this._result = {
-                type: 'undefined'
-            };
-        } else if (result instanceof Error) {
-            this._result = {
-                type: 'error',
-                ename: `${result}`.split(':')[0],
-                evalue: result.message,
-                stack: result.stack
+                type: 'aborted'
             };
         } else {
-            this._result = {
-                type: 'ok',
-                result: `${result}`
-            };
+            if (result === undefined) {
+                this._result = {
+                    type: 'undefined'
+                };
+            } else if (result instanceof Error) {
+                this._result = {
+                    type: 'error',
+                    ename: `${result}`.split(':')[0],
+                    evalue: result.message,
+                    stack: result.stack
+                };
+            } else {
+                this._result = {
+                    type: 'ok',
+                    result: `${result}`
+                };
+            }
         }
     }
 

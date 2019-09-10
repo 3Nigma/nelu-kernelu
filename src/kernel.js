@@ -8,6 +8,7 @@ const { CommMsgRequestHandler,
         DefaultRequestHandler,
         ExecuteRequestHandler,
         KernelInfoRequestHandler,
+        KernelInterruptRequestHandler,
         ShutdownRequestHandler } = require('./kernel/messages/handlers');
 const { SessionMessageCommEvent } = require('./session/postables/events/comm_msg');
 
@@ -51,6 +52,7 @@ class Kernel {
             comm_info_request: new CommInfoRequestHandler(this),
             comm_msg: new CommMsgRequestHandler(this),
             execute_request: new ExecuteRequestHandler(this),
+            interrupt_request: new KernelInterruptRequestHandler(this),
             kernel_info_request: new KernelInfoRequestHandler(this),
             shutdown_request: new ShutdownRequestHandler(this)
         };
@@ -91,17 +93,16 @@ class Kernel {
     }
 
     async restart() {
-        // TODO: anything else?
         return await this._session.restart();
     }
 
-    async destroy() {
+    async shutdown() {
         let killCode;
 
         // TODO(NR) Handle socket `this.stdin` once it is implemented
         Object.values(this._sockets).forEach(socket => socket.removeAllListeners());
         this._hbSocket.removeAllListeners();
-        killCode = await this._session.kill();
+        killCode = await this._session.stop();
         Object.values(this._sockets).forEach(socket => socket.close());
         this._hbSocket.close();
 

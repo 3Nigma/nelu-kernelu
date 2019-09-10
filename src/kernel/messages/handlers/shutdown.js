@@ -12,9 +12,9 @@ class ShutdownRequestHandler extends BaseRequestHandler {
         };
 
         if (message.info.content.restart) {
-            sKernel.restart(doAfterKernelCallback);
+            await sKernel.restart().then(doAfterKernelCallback);
         } else {
-            await sKernel.destroy(doAfterKernelCallback);
+            await sKernel.shutdown().then(doAfterKernelCallback);
         }
     }
 }

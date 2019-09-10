@@ -34,18 +34,25 @@ class Session extends EventEmitter {
         this._runStartupScripts();
     }
 
-    kill() {
+    interrupt() {
+        // Existing handlers for the event that have been attached via process.on('SIGINT') will be disabled during script execution, 
+        // but will continue to work after that.
+        // TODO: make sure we issue a SIGINT only when vm is executing. Otherwise, the kernel will either die or the interrupt won't have the expected behaviour
+        process.kill(process.pid, 'SIGINT');
+    }
+
+    async restart() {
+        const killedCode = await this.stop();
+
+        this._defaultInternals();
+        return killedCode;
+    }
+
+    async stop() {
         return new Promise((resolve, _) => {
             this._server.on("exit", resolve);
             this._server.terminate();
         });
-    }
-
-    async restart() {
-        let killedCode = await this.kill();
-
-        this._defaultInternals();
-        return killedCode;
     }
 
     execute(code) {
