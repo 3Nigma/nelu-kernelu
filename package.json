@@ -8,9 +8,9 @@
         "ipython",
         "jupyter"
     ],
-    "homepage": "https://3Nigma.github.io/nelu-kernelu",
+    "homepage": "https://github.com/3Nigma/nelu-kernelu",
     "bugs": {
-        "url": "https://3Nigma.github.io/nelu-kernelu/issues"
+        "url": "https://github.com/3Nigma/nelu-kernelu/issues"
     },
     "license": "GPLv3",
     "author": {
@@ -22,7 +22,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://3Nigma.github.io/nelu-kernelu.git"
+        "url": "https://github.com/3Nigma/nelu-kernelu.git"
     },
     "dependencies": {
         "pkginfo": "^0.4.1",
