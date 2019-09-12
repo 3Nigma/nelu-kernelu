@@ -72,11 +72,14 @@ Here's an example:
 
 ## Still needs to be done
 * Handling of `comm_close` messages
+* Handle `comm_open` messages originating from outside the kernel
 * Allow the possibility of running a startup script before any cell is executed
 * Make kernel interruption work for all/most of the cases
 * Research the rest of the [Jupyter Widgets](https://ipywidgets.readthedocs.io/en/latest/), document the findings inside a `reengineered` markdown entry and provide an implementation
 
-## Contributions
-**Please do!** PRs are more then welcomed or drop us an issue.
+## Contributors
+* Victor ADASCALITEI - repo owner
+* Radu MILICI
 
-#### Happy JSing
+## How to participate?
+**Contribute!** PRs are more then welcomed, but bugs and/or feature requests are also fine. Every bit of effort is appreciated.
