@@ -1,5 +1,7 @@
 A modern, Promise ready, NodeJS Jupyter _5.2.3_ Kernel with comm and display support. This work was heavily inspired by [Nicolas Riesco](https://github.com/n-riesco)'s [IJavascript kernel](https://github.com/n-riesco/ijavascript) and is, in some sense, a continuation of that.
 
+Currious of what it can do? Well ... [have a look](nbs/nk-features.ipynb).
+
 ## Supported features
 * Allows plain cell results  
 ![plain results](/imgs/own/nk_execute_plain.png)
@@ -14,8 +16,11 @@ A modern, Promise ready, NodeJS Jupyter _5.2.3_ Kernel with comm and display sup
 * Has error stack tracing
 
 ## Installing
-Requires NodeJS v10+ installed on the machine that hosts the Jupyter Notebook server alongside the NeluKernelu JS kernel.
-**TODO**
+Requires **NodeJS v12.3+** installed on the machine that hosts the Jupyter Notebook server alongside the **NeluKernelu JS** kernel.
+
+We're not (_yet_) on NPM so, for now, you would have to manually do a `git clone` followed by a `npm install` which not only fetches the dependencies, but also makes the kernel available to Jupyter.
+
+If you then want to use it, just open jupyter (via `jupyter notebook`, for instance) and you should see it listed there.
 
 ## Restricted features
 Due to security considerations, the following NodeJS objects are not available to be used from within a cell:
@@ -25,6 +30,11 @@ Due to security considerations, the following NodeJS objects are not available t
 # API
 Whenever a Notebook is started which targets this NodeJS kernel, a special `kernel` object is created and made available on each and every code cell. This object exposes kernel functionality into cell-space. 
 
+## Versioning
+The running kernel version is made available via `kernel.version`. This exposes an object with 2 properties:
+* `name` - a `x.y.z.w` string where `x.y.z` follows the [Jupyter Client Specs] currrently supported and `w` is a source build number
+* `code` - a numeric codification of `name` for easier usage. The value is actually computed as `xyz000 + w` where `x`, `y` and `z` are the `name` digits and `w` is the current build number
+ 
 ## Getting the running user-name
 To get the current running user-name, just call `kernel.userName`. This is helpful to deduce the current user especially in hub-like (+ oAuth) environments.
 
@@ -62,3 +72,11 @@ Here's an example:
 
 ## Still needs to be done
 * Handling of `comm_close` messages
+* Allow the possibility of running a startup script before any cell is executed
+* Make kernel interruption work for all/most of the cases
+* Research the rest of the [Jupyter Widgets](https://ipywidgets.readthedocs.io/en/latest/), document the findings inside a `reengineered` markdown entry and provide an implementation
+
+## Contributions
+**Please do!** PRs are more then welcomed or drop us an issue.
+
+#### Happy JSing
