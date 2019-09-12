@@ -1,4 +1,5 @@
 const vm = require('vm');
+const fs = require('fs');
 const { MessageChannel, receiveMessageOnPort } = require('worker_threads');
 
 const { SessionExecuteCodeRequest } = require('./postables/requests/execute_code');
@@ -26,7 +27,7 @@ function getVersionNameFrom(jClientVersion) {
 }
 
 class MessageLoop {
-    constructor(hostPort, { jupyterClientVersion, nkBuildNumber }) {
+    constructor(hostPort, { startupScript, jupyterClientVersion, nkBuildNumber }) {
         this._parentPort = hostPort;
         this._versionName = getVersionNameFrom(jupyterClientVersion);
         this._buildNumber = nkBuildNumber;
@@ -55,6 +56,17 @@ class MessageLoop {
             _commManager: this._commManager,
             _kHostPort: hostPort
         });
+
+        try {
+            // Load the startup-script (if available and valid)
+            if (typeof startupScript === 'string' && fs.accessSync(startupScript, fs.constants.R_OK) === undefined) {
+                const scriptContent = fs.readFileSync(startupScript);
+                
+                vm.runInContext(scriptContent, this._context);
+            }
+        } catch (err) {
+            console.error(`There was an issue executing the startup-script: ${err}`);
+        }
 
         // Need an inner queue for handling (long-lasting) execute-code requests
         const { port1, port2 } = new MessageChannel();

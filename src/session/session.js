@@ -18,8 +18,10 @@ class Session extends EventEmitter {
     }
     _defaultInternalsWith({ logger, protocolVersion, buildNumber, startupScript }) {
         this._logger = logger || this._logger;
-        this._executionCount = 1;
+        this._protocolVersion = protocolVersion || this._protocolVersion;
+        this._buildNumber = buildNumber || this._buildNumber;
         this._startupScript = startupScript || this._startupScript;
+        this._executionCount = 1;
 
         this._tasks = {
             nextId: 1,
@@ -30,13 +32,12 @@ class Session extends EventEmitter {
         // Server that runs the code requests for this session
         this._server = new Worker(MainWorkerPath, {
             workerData: {
-                jupyterClientVersion: protocolVersion,
-                nkBuildNumber: buildNumber
+                startupScript: this._startupScript,
+                jupyterClientVersion: this._protocolVersion,
+                nkBuildNumber: this._buildNumber
             }
         });
         this._server.on("message", msg => this._onMessage(msg));
-
-        this._runStartupScripts();
     }
 
     interrupt() {
@@ -134,10 +135,6 @@ class Session extends EventEmitter {
                 // TODO: we should log this. This should never happen
             }
         }
-    }
-
-    _runStartupScripts() {
-        // TODO
     }
 }
 

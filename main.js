@@ -7,11 +7,12 @@ const { Kernel } = require("./src/kernel");
 const argv = require('yargs')
     .usage('Usage: $0 [options]')
     .example('$0 -c /tmp/conn.json', 'Instantiate the kernel using /tmp/conn.json as the connection-file')
+    .alias('s', 'startup-script')
+        .describe('s', 'The location of a .js file to execute immediatelly after the kernel starts up')
     .alias('l', 'logging-level')
         .choices('l', ['error', 'warn', 'info', 'verbose', 'debug', 'silly'])
         .default('l', 'error')
         .describe('l', "The runtime logging level to start from. 'silly' logs everything while 'error' logs only the errors.")
-    // .alias('p', 'project').nargs('p', 1).describe('p', 'The moment-formatted name of the project to create')
     .alias('c', 'connection-file')
         .describe('c', 'The Jupyter connection file to use.')
     .demandOption(['c'])
@@ -46,13 +47,12 @@ process.on("uncaughtException", err => {
     logger.error(`An uncaught exception triggered in the kernel: ${err}\nStack dumped: ${err.stack}`);
 });
 
-// Start kernel
-let kernel = new Kernel({
+// Initialize the kernel and fire it up
+const kernel = new Kernel({
     logger,
     protocolVersion: "5.3",
     buildNumber: 1, // TODO: take this automatically from somewhere
     connection: JSON.parse(fs.readFileSync(argv['connection-file'])),
-    startupScript: null
+    startupScript: argv['startup-script']
 });
-
 kernel.bindAndGo();
