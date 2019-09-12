@@ -172,7 +172,7 @@ class MessageLoop {
 
         // Note: don't use instanceOf. It looks like Object and Function is not part of the execution context
         //       even though Promise is
-        if (typeof result === 'object' && typeof result._toHtml === 'function') {
+        if (result !== null && typeof result === 'object' && typeof result._toHtml === 'function') {
             let resolvedResultOfHtml = result._toHtml();
 
             isHtml = true;
