@@ -17,6 +17,9 @@
         "name": "Victor ADASCALITEI",
         "email": "adascalitei.victor@gmail.com"
     },
+    "engines": {
+        "node": ">=12.3"
+    },
     "repository": {
         "type": "git",
         "url": "https://3Nigma.github.io/nelu-kernelu.git"
