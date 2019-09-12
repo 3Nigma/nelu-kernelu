@@ -31,5 +31,6 @@
     "devDependencies": {
     },
     "scripts": {
+        "postinstall": "node ./scripts/install"
     }
 }
