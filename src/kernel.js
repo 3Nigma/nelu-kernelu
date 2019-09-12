@@ -16,7 +16,7 @@ const { SessionMessageCommEvent } = require('./session/postables/events/comm_msg
  * Implements a Javascript kernel for IPython/Jupyter.
  */
 class Kernel {
-    constructor({ logger, connection, protocolVersion, startupScript }) {
+    constructor({ logger, connection, protocolVersion, buildNumber, startupScript }) {
         this._logger = logger;
         this._connection = connection;
         this._protocolVersion = protocolVersion;
@@ -46,7 +46,7 @@ class Kernel {
         this._sockets[JupyterSocketTypes.CONTROL].on("message", this._onKernelMessage.bind(this));
 
         // Initialize more complex objects
-        this._session = new Session({ logger, startupScript });
+        this._session = new Session({ logger, protocolVersion, buildNumber, startupScript });
         this._handlers = {
             _default: new DefaultRequestHandler(this),
             comm_info_request: new CommInfoRequestHandler(this),

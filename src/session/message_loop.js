@@ -16,9 +16,20 @@ const { SessionClearableTimer,
         PromisifiedInterval,
         PromisifiedTimeout } = require('./models/promisified_timers');
 
+function getVersionNameFrom(jClientVersion) {
+    let versionName = jClientVersion;
+
+    if (typeof jClientVersion === 'string' && jClientVersion.split('.').length === 2) {
+        versionName += '.0';
+    }
+    return versionName;
+}
+
 class MessageLoop {
-    constructor(hostPort) {
+    constructor(hostPort, { jupyterClientVersion, nkBuildNumber }) {
         this._parentPort = hostPort;
+        this._versionName = getVersionNameFrom(jupyterClientVersion);
+        this._buildNumber = nkBuildNumber;
         this._username = "unknown";
         this._commManager = new SessionCommManager();
 
@@ -109,7 +120,8 @@ class MessageLoop {
         this._executeCodeSourcePort.onmessage = null;
         try {
             let rawEvalResult = vm.runInContext(`{
-                    var kernel = new SessionKernelBrdge(${id}, "${this._username}", _kHostPort, _commManager);
+                    var kernel = new SessionKernelBrdge(${id}, "${this._versionName}", ${this._buildNumber}, 
+                        "${this._username}", _kHostPort, _commManager);
                     ${args.code}
                 }`, this._context, {
                     breakOnSigint: true

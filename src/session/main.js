@@ -1,9 +1,9 @@
-const { isMainThread, parentPort } = require('worker_threads');
+const { isMainThread, parentPort, workerData } = require('worker_threads');
 
 if (!isMainThread) {
     const { MessageLoop } = require('./message_loop');
 
-    new MessageLoop(parentPort).start();
+    new MessageLoop(parentPort, workerData).start();
 }
 
 module.exports = {

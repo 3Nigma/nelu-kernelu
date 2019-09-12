@@ -4,9 +4,34 @@ const { SessionKernelComm } = require('../models/kernel_comm');
 
 const { JupyterDisplayableMessage } = require('../models/displayable_message');
 
+/**
+ * Computes the version-code of the current kernel source.
+ * The result is a number whos value is xyz000 + <build number> where x,y and z are digits taken from the provided name
+ * 
+ * @param {string} name - a 'x.y.z' formatted Jupyter Client version number 
+ * @param {number} buildNumber - a numeric value representing the current build number
+ * @returns a numeric number representing the version code
+ */
+function getVersionCodeFrom(name, buildNumber) {
+    let versParts = name.split('.');
+    let versCode = 0;
+
+    versParts.reverse();
+    versParts.forEach((versPart, vpId) => {
+        versCode += Math.pow(10, vpId) * parseInt(versPart);
+    });
+    versCode = versCode * 1000 + buildNumber;
+    return versCode;
+}
+
 class SessionKernelBrdge {
-    constructor(taskId, username, hostPort, commManager) {
+    constructor(taskId, versionName, buildNumber,
+        username, hostPort, commManager) {
         this._tId = taskId;
+        this._version = {
+            name: `${versionName}.${buildNumber}`,
+            code: getVersionCodeFrom(versionName, buildNumber)
+        };
         this._username = username;
         this._commManager = commManager;
         this._hostPort = hostPort;
@@ -16,6 +41,9 @@ class SessionKernelBrdge {
         commManager._bindTo({ kernel: this });
     }
 
+    get version() {
+        return Object.assign({}, this._version);
+    }
     get taskId() {
         return this._tId;
     }

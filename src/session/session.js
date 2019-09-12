@@ -16,7 +16,7 @@ class Session extends EventEmitter {
     _defaultInternals() {
         this._defaultInternalsWith({});
     }
-    _defaultInternalsWith({ logger, startupScript }) {
+    _defaultInternalsWith({ logger, protocolVersion, buildNumber, startupScript }) {
         this._logger = logger || this._logger;
         this._executionCount = 1;
         this._startupScript = startupScript || this._startupScript;
@@ -28,7 +28,12 @@ class Session extends EventEmitter {
         this._activeComms = {};
 
         // Server that runs the code requests for this session
-        this._server = new Worker(MainWorkerPath);
+        this._server = new Worker(MainWorkerPath, {
+            workerData: {
+                jupyterClientVersion: protocolVersion,
+                nkBuildNumber: buildNumber
+            }
+        });
         this._server.on("message", msg => this._onMessage(msg));
 
         this._runStartupScripts();
