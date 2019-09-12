@@ -71,6 +71,7 @@ Here's an example:
 ![kernel.display(JupyterDisplayableMessage)](/imgs/own/nk_kernel_display.png)
 
 ## Still needs to be done
+* Testing! The automatic kind ...
 * Handling of `comm_close` messages
 * Handle `comm_open` messages originating from outside the kernel
 * Allow the possibility of running a startup script before any cell is executed
