@@ -74,7 +74,6 @@ Here's an example:
 * Testing! The automatic kind ...
 * Handling of `comm_close` messages
 * Handle `comm_open` messages originating from outside the kernel
-* Allow the possibility of running a startup script before any cell is executed
 * Make kernel interruption work for all/most of the cases
 * Research the rest of the [Jupyter Widgets](https://ipywidgets.readthedocs.io/en/latest/), document the findings inside a `reengineered` markdown entry and provide an implementation
 
