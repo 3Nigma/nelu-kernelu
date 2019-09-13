@@ -32,7 +32,7 @@ Whenever a Notebook is started which targets this NodeJS kernel, a special `kern
 
 ## Versioning
 The running kernel version is made available via `kernel.version`. This exposes an object with 2 properties:
-* `name` - a `x.y.z.w` string where `x.y.z` follows the [Jupyter Client Specs] currrently supported and `w` is a source build number
+* `name` - a `x.y.z.w` string where `x.y.z` follows the [Jupyter Client Specs](https://jupyter-client.readthedocs.io/en/stable/index.html) currrently supported and `w` is a source build number
 * `code` - a numeric codification of `name` for easier usage. The value is actually computed as `xyz000 + w` where `x`, `y` and `z` are the `name` digits and `w` is the current build number
  
 ## Getting the running user-name
