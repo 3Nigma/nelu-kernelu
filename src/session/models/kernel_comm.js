@@ -8,12 +8,12 @@ const { SessionMessageCommEvent } = require('../postables/events/comm_msg');
  * "message" events are triggered by the kernel and carry comm_msg data
  */
 class SessionKernelComm extends EventEmitter {
-    static newFor(tId, hostPort, targetName, initialData, metaData) {
-        let createCommEvent = new SessionCreateCommEvent(tId, targetName, initialData || {}, metaData || {});
+    static newFor(kBridge, targetName, initialData, metaData) {
+        let createCommEvent = new SessionCreateCommEvent(kBridge._tId, targetName, initialData || {}, metaData || {});
 
-        createCommEvent.postTo(hostPort);
+        createCommEvent.postTo(kBridge._hostPort);
         // TODO: return only after the event has been sent but try not to use Promises since it might make things ugly on the cell side
-        return new SessionKernelComm(hostPort, createCommEvent.cId, targetName, initialData);
+        return new SessionKernelComm(kBridge._hostPort, createCommEvent.cId, targetName, initialData);
     }
     
     /**
@@ -40,7 +40,7 @@ class SessionKernelComm extends EventEmitter {
             };
         } else {
             // Assume in-session response
-            targetingTaskId = this._kernel.taskId;
+            targetingTaskId = this._kernel._tId;
         }
         const commMsg = new SessionMessageCommEvent(targetingTaskId, this._cId, data);
 

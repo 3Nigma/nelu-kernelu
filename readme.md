@@ -48,8 +48,8 @@ Note: By design, `console.log` does not have the same effect as `kernel.print`. 
 ## Dealing with communication channels (comms)
 ### Opening comms
 The user can currently open a Jupyter communication channel (comm, for short) in one of two ways:
-* through `kernel.newComm()` which creates a new comm that has a target name of `jknb.comm` and an initial data payload of `{}` (empty JS object) _or_
-* through `kernel.newCommFor()` which takes in 3 parameters offering increased flexibility:
+* through `kernel.commManager.newComm()` which creates a new comm that has a target name of `jknb.comm` and an initial data payload of `{}` (empty JS object) _or_
+* through `kernel.commManager.newCommFor()` which takes in 3 parameters offering increased flexibility:
   * targetName - _mandatory_, the comm's target name
   * initialData - _optional_ (defaults to `{}`), the comm's initial-data object payload
   * metaData - _optional_ (defaults to `{}`), the comm's metadata object payload
