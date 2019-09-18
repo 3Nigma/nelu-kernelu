@@ -31,7 +31,7 @@ class KernelSpec {
         const { kernelDir, jsonPath, imgDir } = this._getIntsallPaths();
 
         if (!fs.existsSync(kernelDir)) {
-            fs.mkdirSync(kernelDir);
+            fs.mkdirSync(kernelDir, { recursive: true });
         }
 
         const kernelSpec = JSON.stringify({ argv, display_name, language });
