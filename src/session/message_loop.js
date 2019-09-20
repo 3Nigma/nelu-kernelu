@@ -45,7 +45,18 @@ class MessageLoop {
             clearImmediate: (t) => { if (t instanceof SessionClearableTimer) t._clear(); else clearImmediate(t) }, 
             clearInterval: (t) => { if (t instanceof SessionClearableTimer) t._clear(); else clearInterval(t) }, 
             clearTimeout: (t) => { if (t instanceof SessionClearableTimer) t._clear(); else clearTimeout(t) },
-            exports, module, require,
+            exports, module, 
+            require: (id) => {
+                let finalRequirePath;
+
+                if (typeof id === 'string' && id.startsWith('.') === true) {
+                    // Overwrite the default __dirname base behaviour to make use of the Notebook path base (Issue #2)
+                    finalRequirePath = path.join(process.cwd(), id);
+                } else {
+                    finalRequirePath = id;
+                }
+                return require(finalRequirePath);
+            },
             Buffer, URL, URLSearchParams, WebAssembly,
             Promise, Error,
 
