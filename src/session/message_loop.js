@@ -47,14 +47,10 @@ class MessageLoop {
             clearTimeout: (t) => { if (t instanceof SessionClearableTimer) t._clear(); else clearTimeout(t) },
             exports, module, 
             require: (id) => {
-                let finalRequirePath;
-
-                if (typeof id === 'string' && id.startsWith('.') === true) {
-                    // Overwrite the default __dirname base behaviour to make use of the Notebook path base (Issue #2)
-                    finalRequirePath = path.join(process.cwd(), id);
-                } else {
-                    finalRequirePath = id;
-                }
+                const finalRequirePath = require.resolve(id, {
+                    paths: [ process.cwd() ]
+                });
+                
                 return require(finalRequirePath);
             },
             Buffer, URL, URLSearchParams, WebAssembly,
