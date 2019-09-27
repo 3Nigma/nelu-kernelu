@@ -11,6 +11,7 @@ const { SessionKernelComm } = require('./models/kernel_comm');
 const { SessionKernelBrdge } = require('./models/kernel_bridge');
 const { JupyterDisplayableMessage } = require('./models/displayable_message');
 const { SessionCommManager } = require('./models/comm_manager');
+const { BabelCodeMorpher } = require('./babel_morpher');
 
 const { SessionClearableTimer, 
         PromisifiedImediate,
@@ -33,6 +34,7 @@ class MessageLoop {
         this._buildNumber = nkBuildNumber;
         this._username = "unknown";
         this._commManager = new SessionCommManager();
+        this._codeMorpher = new BabelCodeMorpher();
 
         // TODO: obfuscate _kHostPort/_commManager from the context (random variable name?)
         this._context = vm.createContext({
@@ -124,20 +126,15 @@ class MessageLoop {
      * 
      * @param {} - task id and code to excute 
      */
-    _handleExecuteCodeRequest(msgEvent) {
+    async _handleExecuteCodeRequest(msgEvent) {
         const {id, args} = msgEvent.data;
         let resultMimeType = 'text/plain';
         let promisedEvalResult;
 
         this._executeCodeSourcePort.onmessage = null;
         try {
-            let rawEvalResult = vm.runInContext(`{
-                    var kernel = new SessionKernelBrdge(${id}, "${this._versionName}", ${this._buildNumber}, 
-                        "${this._username}", _kHostPort, _commManager);
-                    ${args.code}
-                }`, this._context, {
-                    breakOnSigint: true
-                });
+            let codeToRun;
+            let rawEvalResult;
             const tryHtmlResolutionFor = (result) => {
                 let { isHtml, promisedVal } = this._tryResolvingHtmlFrom(result);
 
@@ -146,6 +143,19 @@ class MessageLoop {
                 }
                 return promisedVal;
             };
+
+            try {
+                codeToRun = await this._codeMorpher.morph(args.code);
+            } catch {
+                codeToRun = args.code;
+            }
+            vm.runInContext(`{
+                    var kernel = new SessionKernelBrdge(${id}, "${this._versionName}", ${this._buildNumber}, 
+                        "${this._username}", _kHostPort, _commManager);
+                    ${codeToRun}
+                }`, this._context, {
+                    breakOnSigint: true
+                });
 
             if (rawEvalResult instanceof Promise) {
                 promisedEvalResult = rawEvalResult.then(resolvedResult => tryHtmlResolutionFor(resolvedResult));
