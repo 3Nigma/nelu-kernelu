@@ -45,7 +45,14 @@ class MessageLoop {
             clearImmediate: (t) => { if (t instanceof SessionClearableTimer) t._clear(); else clearImmediate(t) }, 
             clearInterval: (t) => { if (t instanceof SessionClearableTimer) t._clear(); else clearInterval(t) }, 
             clearTimeout: (t) => { if (t instanceof SessionClearableTimer) t._clear(); else clearTimeout(t) },
-            exports, module, require,
+            exports, module, 
+            require: (id) => {
+                const finalRequirePath = require.resolve(id, {
+                    paths: [ process.cwd() ]
+                });
+                
+                return require(finalRequirePath);
+            },
             Buffer, URL, URLSearchParams, WebAssembly,
             Promise, Error,
 
