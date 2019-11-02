@@ -156,7 +156,7 @@ class MessageLoop {
             } catch {
                 codeToRun = args.code;
             }
-            vm.runInContext(`{
+            rawEvalResult = vm.runInContext(`{
                     var kernel = new SessionKernelBrdge(${id}, "${this._versionName}", ${this._buildNumber}, 
                         "${this._username}", _kHostPort, _commManager);
                     ${codeToRun}
