@@ -13,7 +13,7 @@ const getInstallDir = () => {
 
     switch (osType) {
         case "Windows_NT":
-            return "%APPDATA%\\jupyter\\kernels";
+            return path.join(process.env.APPDATA,'jupyter/kernels');
         case "Darwin":
             return path.join(homeDir, "Library/Jupyter/kernels");
         case "Linux":
